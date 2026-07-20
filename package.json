@@ -1,0 +1,38 @@
+{
+  "name": "zone-report-parser",
+  "version": "1.0.0",
+  "description": "Local desktop wrapper for the Zone Report Parser app.",
+  "main": "electron-main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.local.zonereportparser",
+    "productName": "Zone Report Parser",
+    "files": [
+      "index.html",
+      "electron-main.cjs",
+      "css/**/*",
+      "js/**/*",
+      "data/**/*",
+      "exports/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  }
+}

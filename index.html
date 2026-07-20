@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zone Report Parser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-lockup">
+          <div class="brand-mark">WC</div>
+          <div>
+            <h1>WCIS</h1>
+            <p>Waste Collection Intelligence System</p>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-tab active" data-route="dashboard"><span>Dashboard</span></button>
+          <button class="nav-tab" data-route="upload"><span>Upload / Parse Reports</span></button>
+          <button class="nav-tab" data-route="results"><span>Parsed Results</span></button>
+          <button class="nav-tab" data-route="mapping"><span>Mapping Review</span></button>
+          <button class="nav-tab" data-route="weekly"><span>Weekly Collection Sheet</span></button>
+          <button class="nav-tab" data-route="zones"><span>Zone Manager</span></button>
+          <button class="nav-tab" data-route="map"><span>Map View</span></button>
+          <button class="nav-tab" data-route="reports"><span>Reports & Analytics</span></button>
+        </nav>
+
+        <div class="sidebar-user">
+          <div class="user-avatar">A</div>
+          <div>
+            <p>Admin User</p>
+            <span>Operations</span>
+          </div>
+        </div>
+      </aside>
+
+      <main id="appContent" class="main-content"></main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
