@@ -1,25 +1,18 @@
 import { state } from "../state.js";
 import { escapeHtml, formatDisplayDate, percent, sortZones } from "../utils/normalizer.js";
 import { generateSelectedWeekColumns } from "../utils/weekCalendar.js";
-import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { pageHeader } from "../components/shell.js";
 
 export function renderReportsAnalytics(container, ctx) {
   const records = ctx.filteredRecords();
   const analytics = buildAnalytics(records);
 
   container.innerHTML = `
-    <div class="analytics-topbar">
-      <div>
-        <h2>Reports & Analytics</h2>
-        <p>Insights into collection performance across zones, communities, and districts.</p>
-      </div>
-      <div class="analytics-actions">
-        ${collectionPeriodControlsHtml("analytics", "Quick Preset")}
-        <button id="analyticsFilterButton" class="btn btn-secondary">Filters</button>
-        <button id="exportAnalyticsButton" class="btn btn-primary analytics-export-button">Export Analytics</button>
-      </div>
-    </div>
-
+    ${pageHeader({
+      title: "Analytics",
+      subtitle: "Collection performance across zones, communities, and districts for the working period.",
+      actions: `<button id="exportAnalyticsButton" class="btn btn-primary">Export analytics</button>`
+    })}
     <div class="analytics-kpi-grid">
       ${overallRateCard(analytics)}
       ${kpiCard("Total Collections", analytics.total.toLocaleString(), `${analytics.completed.toLocaleString()} completed`, "blue", `Pending: ${analytics.pending.toLocaleString()} | Missed: ${analytics.missed.toLocaleString()}`)}
@@ -119,15 +112,7 @@ export function renderReportsAnalytics(container, ctx) {
       </aside>
     </div>`;
 
-  bindCollectionPeriodControls(container, "analytics", ctx);
   container.querySelector("#exportAnalyticsButton").onclick = () => ctx.openExportModal({ dataset: "zone-performance" });
-  container.querySelectorAll("[data-route]").forEach((button) => {
-    button.addEventListener("click", () => ctx.navigate(button.dataset.route));
-  });
-  container.querySelector("#analyticsFilterButton").onclick = () => {
-    ctx.addActivity("Opened analytics filters.");
-    alert("Use the year and week range controls on this screen to change the analytics period.");
-  };
 }
 
 function buildAnalytics(records) {
@@ -258,7 +243,7 @@ function overallRateCard(analytics) {
       <strong>${analytics.completionRate}% <span class="${analytics.rateDelta >= 0 ? "positive-text" : "danger-text"}">${analytics.rateDelta >= 0 ? "↑" : "↓"} ${Math.abs(analytics.rateDelta)}%</span></strong>
       <small>vs previous collection period</small>
     </div>
-    <div class="donut small-donut" style="--pct:${analytics.completionRate}; --ring-color:#16a34a;"><span></span></div>
+    <div class="donut small-donut" style="--pct:${analytics.completionRate}; --ring-color:var(--ok);"><span></span></div>
   </section>`;
 }
 
@@ -274,7 +259,7 @@ function iconForTone(tone) {
 }
 
 function horizontalBar(label, rate) {
-  const color = rate >= 70 ? "#16a34a" : rate >= 45 ? "#f59e0b" : rate > 0 ? "#ef4444" : "#94a3b8";
+  const color = rate >= 70 ? "var(--ok)" : rate >= 45 ? "var(--warn)" : rate > 0 ? "var(--bad)" : "var(--faint)";
   return `<div class="bar-row"><span>${escapeHtml(label)}</span><div class="bar-track"><div style="width:${rate}%; background:${color}"></div></div><strong>${rate}%</strong></div>`;
 }
 
@@ -299,7 +284,7 @@ function performanceRow(zone) {
 }
 
 function sparkline(value) {
-  const color = value >= 70 ? "#16a34a" : value >= 45 ? "#f59e0b" : value > 0 ? "#ef4444" : "#94a3b8";
+  const color = value >= 70 ? "var(--ok)" : value >= 45 ? "var(--warn)" : value > 0 ? "var(--bad)" : "var(--faint)";
   return `<svg class="sparkline" viewBox="0 0 64 20" aria-label="${value}% trend"><polyline points="0,12 12,14 24,10 36,12 48,8 64,10" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="${value ? 1 : 0.45}" /></svg>`;
 }
 

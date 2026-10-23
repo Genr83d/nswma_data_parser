@@ -1,6 +1,6 @@
 import { state } from "../state.js";
 import { exportData } from "../utils/exporter.js";
-import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { collectionPeriodSummary } from "../utils/periodControls.js";
 
 let modalContext = null;
 
@@ -16,7 +16,7 @@ export function openExportModal(options = {}) {
       <div class="modal-header">
         <div>
           <h2>Export Data</h2>
-          <p>Select the data, date range, and format for export.</p>
+          <p>Choose what to export and the file format.</p>
         </div>
         <button id="closeExportModalButton" class="icon-button">×</button>
       </div>
@@ -31,8 +31,10 @@ export function openExportModal(options = {}) {
             <option value="parsed" ${options.dataset === "parsed" ? "selected" : ""}>Collection History</option>
           </select>
         </label>
-        <div class="modal-grid">
-          ${collectionPeriodControlsHtml("export", "Week Range")}
+        <div class="export-period-note">
+          <span>Period</span>
+          <strong>${collectionPeriodSummary()}</strong>
+          <small>Change it with the working period bar at the top of the app.</small>
         </div>
         <label>
           <span>Format</span>
@@ -53,7 +55,6 @@ export function openExportModal(options = {}) {
   document.body.appendChild(overlay);
   document.getElementById("closeExportModalButton").onclick = closeExportModal;
   document.getElementById("cancelExportButton").onclick = closeExportModal;
-  bindCollectionPeriodControls(overlay, "export", { refreshRoute: null });
   overlay.onclick = (event) => {
     if (event.target === overlay) closeExportModal();
   };

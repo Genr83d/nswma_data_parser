@@ -1,6 +1,6 @@
 import { state, saveState, addActivity, resetParsedData } from "../state.js";
-import { escapeAttr, escapeHtml, formatBytes, sampleReport, sortZones } from "../utils/normalizer.js";
-import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { escapeAttr, escapeHtml, formatBytes, sampleReport } from "../utils/normalizer.js";
+import { pageHeader, showToast, workflowStatus } from "../components/shell.js";
 import { organizeReportsByMonth, monthlyReportText, organizeReportsByZone, zoneMonthReportText, zoneMonthFileName } from "../utils/monthlyOrganizer.js";
 import { downloadFile } from "../utils/exporter.js";
 
@@ -10,51 +10,81 @@ let organizerMode = "month"; // "month" | "zone"
 
 export function renderUploadReports(container, ctx) {
   const uploadedFiles = state.uploadedFiles || [];
+  const status = workflowStatus();
+  const hasGroups = (organizerMode === "month" ? monthlyGroups : zoneGroups).length > 0;
   container.innerHTML = `
-    <div class="upload-topbar">
-      <div><h2>Upload / Parse Reports</h2><p>Upload WhatsApp .txt files or paste raw report text to extract collection data</p></div>
-      <div class="upload-actions"><button id="parsingGuideButton" class="btn btn-secondary">View Parsing Guide</button><button id="loadSampleButton" class="btn btn-primary purple-button">Sample Reports</button></div>
-    </div>
-    <div class="panel upload-filter-panel">
-      <div class="filter-group"><h3>Collection Period</h3><div class="date-range-row">${collectionPeriodControlsHtml("upload", "Quick Preset")}</div><p>Select the month, year, and week range of the reports</p></div>
-      <div class="filter-group"><h3>Zone Filter</h3><select id="zoneFilter" class="field"><option value="all">All Zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.filters.zone === zone.name ? "selected" : ""}>${zone.name}</option>`).join("")}</select><p>Choose a zone or leave as All Zones</p></div>
-      <div class="support-card"><strong>Supported file type: .txt</strong><span>Files are processed locally in your browser.</span><span>No data is sent to any server.</span></div>
-    </div>
-    <div class="upload-grid">
-      <div class="panel upload-card">
-        <h3>1. Upload WhatsApp .txt File(s)</h3>
+    ${pageHeader({
+      step: "upload",
+      title: "Import reports",
+      subtitle: "Add this period's WhatsApp report exports, then parse them into collection records.",
+      actions: `<button id="parsingGuideButton" class="btn btn-ghost">Formatting guide</button><button id="loadSampleButton" class="btn btn-secondary">Try sample data</button>`
+    })}
+    <div class="import-grid">
+      <section class="panel import-card">
+        <div class="card-heading"><h3>Add .txt files</h3><span class="card-hint">WhatsApp → Export chat → Without media</span></div>
         <input id="fileInput" class="sr-file" type="file" accept=".txt,text/plain" multiple />
-        <label id="dropZone" class="drop-zone" for="fileInput"><div class="upload-cloud">↑</div><strong>Drag & drop .txt files here</strong><span>or</span><button id="chooseFilesButton" class="btn btn-primary" type="button">Choose Files</button><small>You can upload multiple .txt files</small></label>
-        <div class="uploaded-heading"><h4>Uploaded Files (${uploadedFiles.length})</h4></div>
-        <div class="uploaded-table"><table><thead><tr><th>File Name</th><th>Size</th><th>Uploaded At</th><th>Status</th></tr></thead><tbody>${uploadedFiles.length ? uploadedFiles.map(uploadedFileRow).join("") : `<tr><td colspan="4"><div class="empty-files"><div>□</div><p>No files uploaded yet</p></div></td></tr>`}</tbody></table></div>
-      </div>
-      <div class="panel upload-card">
-        <div class="paste-heading"><h3>2. Or Paste Raw Report Text</h3><button id="clearTextButton" class="btn btn-secondary">Clear Text</button></div>
-        <textarea id="rawText" class="paste-textarea" placeholder="Paste WhatsApp report text here...">${escapeHtml(state.rawText)}</textarea>
-        <p class="char-count">${state.rawText.length.toLocaleString()} characters</p>
-        <div class="tips-card"><strong>Tips for better parsing:</strong><ul><li>Include the zone name in the report, such as Zone 10</li><li>Include dates, such as March 31st 2026</li><li>Keep completed, incomplete, forecast, late, and backlog sections</li></ul></div>
-      </div>
+        <label id="dropZone" class="drop-zone" for="fileInput">
+          <div class="upload-cloud" aria-hidden="true">↑</div>
+          <strong>Drop .txt files here</strong>
+          <span>or</span>
+          <button id="chooseFilesButton" class="btn btn-primary" type="button">Choose files</button>
+          <small>You can add several files at once</small>
+        </label>
+        <div class="file-list">
+          ${uploadedFiles.length
+            ? `<p class="file-list-heading">${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} loaded</p>${uploadedFiles.map(uploadedFileRow).join("")}`
+            : `<p class="file-list-empty">No files added yet.</p>`}
+        </div>
+      </section>
+      <section class="panel import-card">
+        <div class="card-heading"><h3>Report text</h3><button id="clearTextButton" class="btn btn-ghost btn-sm" ${state.rawText ? "" : "disabled"}>Clear</button></div>
+        <textarea id="rawText" class="paste-textarea" placeholder="Files you add appear here. You can also paste report text directly.">${escapeHtml(state.rawText)}</textarea>
+        <p id="charCount" class="char-count">${state.rawText.length.toLocaleString()} characters</p>
+      </section>
     </div>
-    <section class="panel monthly-organizer-panel">
-      <div class="monthly-organizer-heading">
-        <div>
-          <h3>Monthly Report Organizer</h3>
-          <p>Split a large WhatsApp export into smaller month-by-month text files before parsing.</p>
+    <details id="organizerDisclosure" class="panel tool-disclosure" ${hasGroups ? "open" : ""}>
+      <summary>
+        <span><strong>Large export?</strong> Split it into month or zone files before parsing</span>
+        <span class="disclosure-chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="monthly-organizer-panel">
+        <div class="monthly-organizer-heading">
+          <p>Uses the report text above. Download the pieces, then import just the month you need.</p>
+          <div class="monthly-organizer-actions">
+            <div class="segmented" role="group" aria-label="Split by">
+              <button id="organizeMonthlyButton" class="segmented-option${organizerMode === "month" ? " organizer-active" : ""}">By month</button>
+              <button id="organizeByZoneButton" class="segmented-option${organizerMode === "zone" ? " organizer-active" : ""}">By zone</button>
+            </div>
+            <button id="downloadAllOrganizerButton" class="btn btn-secondary" ${hasGroups ? "" : "disabled"}>Download all</button>
+          </div>
         </div>
-        <div class="monthly-organizer-actions">
-          <button id="organizeMonthlyButton" class="btn btn-secondary${organizerMode === "month" ? " organizer-active" : ""}">Organize by Month</button>
-          <button id="organizeByZoneButton" class="btn btn-secondary${organizerMode === "zone" ? " organizer-active" : ""}">Organize by Zone</button>
-          <button id="downloadAllOrganizerButton" class="btn btn-primary" ${(organizerMode === "month" ? monthlyGroups : zoneGroups).length ? "" : "disabled"}>Download All Files</button>
+        <div id="monthlyOrganizerResults" class="monthly-organizer-results">
+          ${organizerMode === "zone" ? zoneOrganizerHtml(zoneGroups) : monthlyOrganizerHtml(monthlyGroups)}
         </div>
       </div>
-      <div id="monthlyOrganizerResults" class="monthly-organizer-results">
-        ${monthlyOrganizerHtml(monthlyGroups)}
+    </details>
+    <div class="action-bar">
+      <p id="importStatusText" class="action-bar-status">${importStatusText(state.rawText, uploadedFiles.length)}</p>
+      <div class="action-bar-buttons">
+        ${status.parsed ? `<button id="clearButton" class="btn btn-ghost">Discard parsed records</button><button class="btn btn-secondary" data-route="results">View ${status.records.toLocaleString()} records</button>` : ""}
+        <button id="parseButton" class="btn btn-primary btn-lg" ${state.rawText.trim() ? "" : "disabled"}>${status.parsed ? "Parse again" : "Parse reports"} →</button>
       </div>
-    </section>
-    <div class="parse-ready panel"><div class="ready-icon">✦</div><div><h3>Ready to Parse</h3><p>Upload files or paste text, set your filters, then click Parse Reports to extract collection data.</p></div><button id="parseButton" class="btn btn-primary parse-main-button">Parse Reports</button><button id="clearButton" class="btn btn-secondary">Clear Data</button></div>`;
+    </div>`;
+
+  const rawTextInput = container.querySelector("#rawText");
+  rawTextInput.oninput = () => {
+    const value = rawTextInput.value;
+    container.querySelector("#charCount").textContent = `${value.length.toLocaleString()} characters`;
+    container.querySelector("#importStatusText").innerHTML = importStatusText(value, uploadedFiles.length);
+    container.querySelector("#parseButton").disabled = !value.trim();
+    container.querySelector("#clearTextButton").disabled = !value;
+  };
+  rawTextInput.onchange = () => {
+    state.rawText = rawTextInput.value;
+    saveState();
+  };
 
   const fileInput = container.querySelector("#fileInput");
-  bindCollectionPeriodControls(container, "upload", ctx);
   fileInput.onchange = async (event) => ctx.loadReportFiles(Array.from(event.target.files || []));
   container.querySelector("#chooseFilesButton").onclick = () => fileInput.click();
 
@@ -72,7 +102,6 @@ export function renderUploadReports(container, ctx) {
 
   container.querySelector("#parseButton").onclick = async () => {
     state.rawText = container.querySelector("#rawText").value;
-    state.filters.zone = container.querySelector("#zoneFilter").value;
     saveState();
     await runParseWithProgress(ctx);
   };
@@ -110,27 +139,38 @@ export function renderUploadReports(container, ctx) {
     saveState();
     ctx.refreshRoute();
   };
-  container.querySelector("#clearButton").onclick = () => {
-    monthlyGroups = [];
-    zoneGroups = [];
-    resetParsedData();
-    addActivity("Cleared parsed records.");
-    ctx.refreshRoute();
-  };
+  const clearButton = container.querySelector("#clearButton");
+  if (clearButton) {
+    clearButton.onclick = () => {
+      if (!confirm("Discard all parsed records and the loaded report text? Zones, districts, and aliases are kept.")) return;
+      monthlyGroups = [];
+      zoneGroups = [];
+      resetParsedData();
+      addActivity("Cleared parsed records.");
+      showToast("Parsed records discarded.");
+      ctx.refreshRoute();
+    };
+  }
   container.querySelector("#parsingGuideButton").onclick = openParsingGuideModal;
   bindMonthlyDownloadButtons(container);
   bindZoneDownloadButtons(container);
 }
 
 function uploadedFileRow(file) {
-  return `<tr><td>${escapeHtml(file.name)}</td><td>${formatBytes(file.size)}</td><td>${new Date(file.uploadedAt).toLocaleString()}</td><td><span class="status-pill status-matched">${file.status}</span></td></tr>`;
+  return `<div class="file-row"><span class="file-icon" aria-hidden="true">TXT</span><div><strong>${escapeHtml(file.name)}</strong><span>${formatBytes(file.size)} · added ${new Date(file.uploadedAt).toLocaleString()}</span></div></div>`;
+}
+
+function importStatusText(text, fileCount) {
+  if (!text.trim()) return "Add files or paste report text to continue.";
+  const source = fileCount ? `${fileCount} file${fileCount === 1 ? "" : "s"}` : "Pasted text";
+  return `<strong>Ready to parse.</strong> ${source} · ${text.length.toLocaleString()} characters`;
 }
 
 function monthlyOrganizerHtml(groups) {
   if (!groups.length) {
     return `<div class="monthly-organizer-empty">
-      <strong>No monthly groups yet</strong>
-      <span>Upload or paste a WhatsApp export, then click Organize by Month.</span>
+      <strong>Nothing split yet</strong>
+      <span>Add report text above, then choose By month.</span>
     </div>`;
   }
   return groups.map((group) => `
@@ -163,8 +203,8 @@ function renderOrganizerResults(container) {
 function zoneOrganizerHtml(groups) {
   if (!groups.length) {
     return `<div class="monthly-organizer-empty">
-      <strong>No zone groups yet</strong>
-      <span>Upload or paste a WhatsApp export, then click Organize by Zone.</span>
+      <strong>Nothing split yet</strong>
+      <span>Add report text above, then choose By zone.</span>
     </div>`;
   }
   return groups.map((group) => `

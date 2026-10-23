@@ -6,6 +6,7 @@ import { renderZoneManager } from "./screens/zoneManager.js";
 import { renderWeeklyCollectionSheet } from "./screens/weeklyCollectionSheet.js";
 import { renderMapView } from "./screens/mapView.js";
 import { renderReportsAnalytics } from "./screens/reportsAnalytics.js";
+import { renderShell } from "./components/shell.js";
 
 const routes = {
   dashboard: renderDashboard,
@@ -23,8 +24,15 @@ let appContext = null;
 
 export function initRouter(context) {
   appContext = context;
-  document.querySelectorAll("[data-route]").forEach((button) => {
+  document.querySelectorAll(".topbar [data-route]").forEach((button) => {
     button.addEventListener("click", () => navigate(button.dataset.route));
+  });
+  // Any [data-route] element rendered inside a screen navigates without per-screen wiring.
+  document.getElementById("appContent").addEventListener("click", (event) => {
+    const target = event.target.closest("[data-route]");
+    if (!target || target.disabled) return;
+    event.preventDefault();
+    navigate(target.dataset.route);
   });
   const initialRoute = location.hash ? location.hash.replace("#", "") : currentRoute;
   navigate(initialRoute);
@@ -36,15 +44,19 @@ export function initRouter(context) {
 
 export function navigate(route, options = {}) {
   if (!routes[route]) route = "dashboard";
+  const isNewRoute = route !== currentRoute;
   currentRoute = route;
   if (options.updateHash !== false && location.hash.replace("#", "") !== route) {
     history.replaceState(null, "", `#${route}`);
   }
-  document.querySelectorAll("[data-route]").forEach((button) => {
+  document.querySelectorAll(".topbar [data-route]").forEach((button) => {
     button.classList.toggle("active", button.dataset.route === route);
   });
   const container = document.getElementById("appContent");
+  container.dataset.screen = route;
   routes[route](container, appContext);
+  renderShell(route, appContext);
+  if (isNewRoute || options.scrollTop) window.scrollTo(0, 0);
 }
 
 export function refreshRoute() {
