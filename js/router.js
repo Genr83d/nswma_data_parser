@@ -24,7 +24,7 @@ let appContext = null;
 
 export function initRouter(context) {
   appContext = context;
-  document.querySelectorAll(".sidebar [data-route]").forEach((button) => {
+  document.querySelectorAll(".topbar [data-route]").forEach((button) => {
     button.addEventListener("click", () => navigate(button.dataset.route));
   });
   // Any [data-route] element rendered inside a screen navigates without per-screen wiring.
@@ -49,7 +49,7 @@ export function navigate(route, options = {}) {
   if (options.updateHash !== false && location.hash.replace("#", "") !== route) {
     history.replaceState(null, "", `#${route}`);
   }
-  document.querySelectorAll(".sidebar [data-route]").forEach((button) => {
+  document.querySelectorAll(".topbar [data-route]").forEach((button) => {
     button.classList.toggle("active", button.dataset.route === route);
   });
   const container = document.getElementById("appContent");

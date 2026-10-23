@@ -1,6 +1,6 @@
 import { state, saveState, addActivity, resetParsedData } from "../state.js";
 import { escapeAttr, escapeHtml, formatBytes, sampleReport } from "../utils/normalizer.js";
-import { pageHeader, showToast, workflowStatus, workflowStepper } from "../components/shell.js";
+import { pageHeader, showToast, workflowStatus } from "../components/shell.js";
 import { organizeReportsByMonth, monthlyReportText, organizeReportsByZone, zoneMonthReportText, zoneMonthFileName } from "../utils/monthlyOrganizer.js";
 import { downloadFile } from "../utils/exporter.js";
 
@@ -14,11 +14,11 @@ export function renderUploadReports(container, ctx) {
   const hasGroups = (organizerMode === "month" ? monthlyGroups : zoneGroups).length > 0;
   container.innerHTML = `
     ${pageHeader({
+      step: "upload",
       title: "Import reports",
       subtitle: "Add this period's WhatsApp report exports, then parse them into collection records.",
       actions: `<button id="parsingGuideButton" class="btn btn-ghost">Formatting guide</button><button id="loadSampleButton" class="btn btn-secondary">Try sample data</button>`
     })}
-    ${workflowStepper("upload")}
     <div class="import-grid">
       <section class="panel import-card">
         <div class="card-heading"><h3>Add .txt files</h3><span class="card-hint">WhatsApp → Export chat → Without media</span></div>

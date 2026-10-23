@@ -1,6 +1,6 @@
 import { state, saveState, addActivity } from "../state.js";
 import { escapeAttr, escapeHtml, normalizeZoneName, sortZones } from "../utils/normalizer.js";
-import { pageHeader, showToast, workflowStepper } from "../components/shell.js";
+import { pageHeader, showToast } from "../components/shell.js";
 import { getCollectionPeriodDateRange } from "../utils/weekCalendar.js";
 
 export function renderWeeklyCollectionSheet(container, ctx) {
@@ -17,11 +17,11 @@ export function renderWeeklyCollectionSheet(container, ctx) {
 
   container.innerHTML = `
     ${pageHeader({
+      step: "weekly",
       title: "Weekly sheet",
       subtitle: "Each district's collections per week for the working period. Click a cell to correct it; edits save automatically.",
       actions: `<button id="reviewFlaggedButton" class="btn ${flaggedCount > 0 ? "btn-amber" : "btn-ghost"}">Review flagged${flaggedCount > 0 ? ` (${flaggedCount})` : ""}</button><button id="exportWeeklyPdfButton" class="btn btn-secondary">Export PDF</button><button id="exportWeeklyButton" class="btn btn-primary">Export Excel</button>`
     })}
-    ${workflowStepper("weekly")}
     ${state.records.length ? "" : `<div class="inline-notice tone-info"><strong>No reports parsed for this sheet yet.</strong> Rows below only show each district's default pattern. <button class="link-button" data-route="upload">Import reports</button></div>`}
 
     <section class="panel weekly-filter-panel">
@@ -37,13 +37,13 @@ export function renderWeeklyCollectionSheet(container, ctx) {
     </section>
 
     <section class="panel weekly-summary-strip">
-      ${summaryItem("Zones", state.zones.length, "Z", "#dbeafe", "#2563eb")}
-      ${summaryItem("Communities", stats.communities, "C", "#dcfce7", "#16a34a")}
-      ${summaryItem("Districts", stats.districts, "D", "#ede9fe", "#7c3aed")}
-      <div class="weekly-summary-progress"><span>Completion (All Weeks)</span><strong>${stats.completionRate}%</strong><div class="confidence-track"><div style="width:${stats.completionRate}%; background:#22c55e"></div></div></div>
-      ${summaryItem("Completed", stats.completed, "", "#ecfdf5", "#047857")}
-      ${summaryItem("Pending", stats.pending, "", "#fef3c7", "#f59e0b")}
-      ${summaryItem("Missed", stats.missed, "", "#fee2e2", "#ef4444")}
+      ${summaryItem("Zones", state.zones.length, "Z", "#dde9ec", "#1d5566")}
+      ${summaryItem("Communities", stats.communities, "C", "#e0f0e1", "#3d8b54")}
+      ${summaryItem("Districts", stats.districts, "D", "#ebe5f2", "#6a4f93")}
+      <div class="weekly-summary-progress"><span>Completion (All Weeks)</span><strong>${stats.completionRate}%</strong><div class="confidence-track"><div style="width:${stats.completionRate}%; background:#3d8b54"></div></div></div>
+      ${summaryItem("Completed", stats.completed, "", "#f0f7f0", "#2a6a3d")}
+      ${summaryItem("Pending", stats.pending, "", "#f9ecc9", "#d9940f")}
+      ${summaryItem("Missed", stats.missed, "", "#f7e0d9", "#c4472f")}
     </section>
     ${weeklyDiagnosticsHtml()}
 
@@ -510,8 +510,8 @@ function weeklyPdfStyles() {
     @page { margin: 0.35in; size: landscape; }
     * { box-sizing: border-box; }
     body {
-      background: #ffffff;
-      color: #0f172a;
+      background: #fffdf8;
+      color: #1b1a16;
       font-family: Inter, Arial, sans-serif;
       margin: 0;
       padding: 20px;
@@ -530,7 +530,7 @@ function weeklyPdfStyles() {
     }
     .pdf-header p,
     .pdf-header span {
-      color: #475569;
+      color: #45413a;
       font-size: 11px;
       font-weight: 700;
       margin: 4px 0 0;
@@ -544,8 +544,8 @@ function weeklyPdfStyles() {
     }
     .weekly-table th,
     .weekly-table td {
-      border-bottom: 1px solid #cbd5e1;
-      border-right: 1px solid #cbd5e1;
+      border-bottom: 1px solid #d2cbbb;
+      border-right: 1px solid #d2cbbb;
       padding: 7px 8px;
       position: relative;
       vertical-align: middle;
@@ -553,21 +553,21 @@ function weeklyPdfStyles() {
     }
     .weekly-table th:first-child,
     .weekly-table td:first-child {
-      border-left: 1px solid #cbd5e1;
+      border-left: 1px solid #d2cbbb;
     }
     .weekly-table thead tr:first-child th {
-      border-top: 1px solid #cbd5e1;
+      border-top: 1px solid #d2cbbb;
     }
     .weekly-table td:nth-child(n+4):not(:last-child) {
       text-align: center;
     }
     .weekly-table th {
-      background: #f8fafc;
+      background: #f8f5ee;
       font-weight: 900;
     }
     .weekly-table .week-header {
-      background: #dcfce7;
-      color: #047857;
+      background: #e0f0e1;
+      color: #2a6a3d;
       text-align: center;
     }
     .weekly-table .week-header strong,
@@ -580,23 +580,23 @@ function weeklyPdfStyles() {
       margin-top: 2px;
     }
     .weekly-row-zone {
-      background: #f1f5f9;
+      background: #f0ece2;
       font-weight: 900;
     }
     .weekly-row-zone td {
-      border-top: 1px solid #94a3b8;
+      border-top: 1px solid #aaa497;
     }
     .weekly-row-community {
-      background: #f8fafc;
+      background: #f8f5ee;
       font-weight: 800;
     }
     .weekly-row-community td:nth-child(2) {
-      color: #0f172a;
+      color: #1b1a16;
     }
     .weekly-row-district td:nth-child(1),
     .weekly-row-district td:nth-child(2) {
-      background: #ffffff;
-      color: #94a3b8;
+      background: #fffdf8;
+      color: #aaa497;
     }
     .community-header-cell {
       display: inline-flex;
@@ -608,7 +608,7 @@ function weeklyPdfStyles() {
       position: relative;
     }
     .district-child-cell::before {
-      background: #cbd5e1;
+      background: #d2cbbb;
       border-radius: 999px;
       content: "";
       height: 5px;
@@ -631,14 +631,14 @@ function weeklyPdfStyles() {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .weekly-cell.completed { background: #dcfce7; color: #047857; }
-    .weekly-cell.daily { background: #dbeafe; color: #2563eb; }
-    .weekly-cell.partial { background: #ffedd5; color: #ea580c; }
-    .weekly-cell.missed { background: #fee2e2; color: #dc2626; }
-    .weekly-cell.nodata { background: #f1f5f9; color: #64748b; }
-    .text-slate-500 { color: #64748b; padding: 12px; }
+    .weekly-cell.completed { background: #e0f0e1; color: #2a6a3d; }
+    .weekly-cell.daily { background: #dde9ec; color: #1d5566; }
+    .weekly-cell.partial { background: #f7e6d4; color: #c96a1c; }
+    .weekly-cell.missed { background: #f7e0d9; color: #c4472f; }
+    .weekly-cell.nodata { background: #f0ece2; color: #7a756b; }
+    .text-slate-500 { color: #7a756b; padding: 12px; }
     .zone-table-section { margin-top: 0; }
-    .zone-table-header { background: #1e293b; color: #fff; padding: 12px 20px; margin-bottom: 12px; border-radius: 4px; }
+    .zone-table-header { background: #1b1a16; color: #fff; padding: 12px 20px; margin-bottom: 12px; border-radius: 4px; }
     .zone-table-header h2 { font-size: 16px; font-weight: 900; margin: 0; }
     .page-break-before { page-break-before: always; break-before: page; }
     @media print {
@@ -726,30 +726,30 @@ function flagReviewStyles() {
   return `
     @page { margin: 0.5in; }
     * { box-sizing: border-box; }
-    body { background: #fff; color: #0f172a; font-family: Inter, Arial, sans-serif; margin: 0; padding: 24px; font-size: 12px; }
-    .report-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #0f172a; }
+    body { background: #fff; color: #1b1a16; font-family: Inter, Arial, sans-serif; margin: 0; padding: 24px; font-size: 12px; }
+    .report-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #1b1a16; }
     .report-header h1 { font-size: 22px; margin: 0 0 6px; }
-    .report-header p { color: #475569; font-size: 11px; margin: 0; max-width: 540px; line-height: 1.5; }
-    .report-meta { text-align: right; font-size: 10px; color: #475569; display: flex; flex-direction: column; gap: 4px; white-space: nowrap; }
-    .report-notice { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; color: #92400e; font-size: 11px; margin-bottom: 20px; padding: 10px 14px; }
+    .report-header p { color: #45413a; font-size: 11px; margin: 0; max-width: 540px; line-height: 1.5; }
+    .report-meta { text-align: right; font-size: 10px; color: #45413a; display: flex; flex-direction: column; gap: 4px; white-space: nowrap; }
+    .report-notice { background: #f9ecc9; border: 1px solid #d9940f; border-radius: 6px; color: #8f5c07; font-size: 11px; margin-bottom: 20px; padding: 10px 14px; }
     .zone-block { margin-bottom: 28px; }
-    .zone-block h2 { font-size: 15px; font-weight: 900; background: #f1f5f9; border-left: 4px solid #2563eb; margin: 0 0 12px; padding: 8px 12px; }
+    .zone-block h2 { font-size: 15px; font-weight: 900; background: #f0ece2; border-left: 4px solid #1d5566; margin: 0 0 12px; padding: 8px 12px; }
     .community-block { margin-bottom: 16px; padding-left: 12px; }
-    .community-block h3 { font-size: 11px; font-weight: 800; color: #475569; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .community-block h3 { font-size: 11px; font-weight: 800; color: #45413a; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.04em; }
     table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
-    th, td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: left; font-size: 11px; }
-    th { background: #f8fafc; font-weight: 700; }
+    th, td { border: 1px solid #e6e1d5; padding: 6px 10px; text-align: left; font-size: 11px; }
+    th { background: #f8f5ee; font-weight: 700; }
     th:not(:first-child), td:not(:first-child) { text-align: center; }
-    th span { display: block; font-size: 9px; font-weight: 500; color: #64748b; }
+    th span { display: block; font-size: 9px; font-weight: 500; color: #7a756b; }
     .district-name { font-weight: 600; padding-left: 20px; position: relative; }
-    .district-name::before { content: "•"; position: absolute; left: 8px; color: #94a3b8; }
+    .district-name::before { content: "•"; position: absolute; left: 8px; color: #aaa497; }
     .weekly-cell { border-radius: 4px; display: inline-flex; font-size: 9.5px; font-weight: 800; justify-content: center; min-width: 70px; padding: 3px 6px; }
-    .weekly-cell.completed { background: #dcfce7; color: #047857; }
-    .weekly-cell.daily { background: #dbeafe; color: #2563eb; }
-    .weekly-cell.partial { background: #ffedd5; color: #ea580c; }
-    .weekly-cell.missed { background: #fee2e2; color: #dc2626; }
-    .weekly-cell.nodata { background: #f1f5f9; color: #94a3b8; }
-    footer { border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10px; margin-top: 32px; padding-top: 8px; text-align: center; }
+    .weekly-cell.completed { background: #e0f0e1; color: #2a6a3d; }
+    .weekly-cell.daily { background: #dde9ec; color: #1d5566; }
+    .weekly-cell.partial { background: #f7e6d4; color: #c96a1c; }
+    .weekly-cell.missed { background: #f7e0d9; color: #c4472f; }
+    .weekly-cell.nodata { background: #f0ece2; color: #aaa497; }
+    footer { border-top: 1px solid #e6e1d5; color: #aaa497; font-size: 10px; margin-top: 32px; padding-top: 8px; text-align: center; }
     @media print {
       body { padding: 0; }
       .zone-block { page-break-inside: avoid; page-break-after: always; break-inside: avoid; break-after: page; }

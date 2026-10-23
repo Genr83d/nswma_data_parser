@@ -40,11 +40,20 @@ export function renderShell(route, ctx) {
 function updateNavBadges() {
   const status = workflowStatus();
   const badges = {
-    upload: status.parsed ? { text: "✓", tone: "done" } : status.hasInput ? { text: "Ready", tone: "info" } : null,
+    upload: !status.parsed && status.hasInput ? { text: "Ready", tone: "info" } : null,
     results: status.parsed ? { text: status.records.toLocaleString(), tone: "muted" } : null,
-    mapping: status.parsed ? (status.open ? { text: status.open.toLocaleString(), tone: "warn" } : { text: "✓", tone: "done" }) : null,
+    mapping: status.parsed && status.open ? { text: status.open.toLocaleString(), tone: "warn" } : null,
     weekly: null
   };
+  const stepStates = {
+    upload: status.parsed ? "done" : "",
+    results: status.parsed ? "done" : "",
+    mapping: status.parsed ? (status.open ? "attention" : "done") : "",
+    weekly: status.parsed && !status.open ? "ready" : ""
+  };
+  document.querySelectorAll("[data-step]").forEach((element) => {
+    element.dataset.state = stepStates[element.dataset.step] || "";
+  });
   document.querySelectorAll("[data-nav-badge]").forEach((element) => {
     const badge = badges[element.dataset.navBadge];
     element.textContent = badge?.text || "";
@@ -110,51 +119,18 @@ function renderPeriodBar(ctx) {
   bindCollectionPeriodControls(bar, "global", ctx);
 }
 
-export function pageHeader({ title, subtitle = "", actions = "" }) {
+const STEP_NAMES = { upload: 1, results: 2, mapping: 3, weekly: 4 };
+
+export function pageHeader({ title, subtitle = "", actions = "", step = "", eyebrow = "" }) {
+  const label = step ? `Step ${STEP_NAMES[step]} of 4` : eyebrow;
   return `<header class="page-header">
     <div class="page-heading">
+      ${label ? `<span class="page-eyebrow">${escapeHtml(label)}</span>` : ""}
       <h2>${escapeHtml(title)}</h2>
       ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ""}
     </div>
     ${actions ? `<div class="page-actions">${actions}</div>` : ""}
   </header>`;
-}
-
-export function workflowStepper(currentRoute) {
-  const status = workflowStatus();
-  const steps = [
-    {
-      route: "upload",
-      label: "Import reports",
-      caption: status.parsed ? "Parsed" : status.files ? `${status.files} file${status.files === 1 ? "" : "s"} loaded` : status.characters ? `${status.characters.toLocaleString()} characters` : "Add WhatsApp exports",
-      state: status.parsed ? "done" : "todo"
-    },
-    {
-      route: "results",
-      label: "Check results",
-      caption: status.parsed ? `${status.records.toLocaleString()} records` : "Waiting for import",
-      state: status.parsed ? "done" : "todo"
-    },
-    {
-      route: "mapping",
-      label: "Fix matches",
-      caption: !status.parsed ? "Waiting for import" : status.open ? `${status.open.toLocaleString()} need attention` : "All matched",
-      state: !status.parsed ? "todo" : status.open ? "attention" : "done"
-    },
-    {
-      route: "weekly",
-      label: "Weekly sheet",
-      caption: status.parsed ? "Review and export" : "Waiting for import",
-      state: status.parsed && !status.open ? "ready" : "todo"
-    }
-  ];
-  return `<nav class="workflow-stepper" aria-label="Workflow steps">
-    ${steps.map((step, index) => `
-      <button class="workflow-step is-${step.state}${step.route === currentRoute ? " is-current" : ""}" data-route="${step.route}" type="button" ${step.route === currentRoute ? 'aria-current="step"' : ""}>
-        <span class="workflow-step-marker">${step.state === "done" ? "✓" : index + 1}</span>
-        <span class="workflow-step-text"><strong>${step.label}</strong><small>${escapeHtml(step.caption)}</small></span>
-      </button>`).join(`<span class="workflow-step-connector" aria-hidden="true"></span>`)}
-  </nav>`;
 }
 
 export function isWorkflowRoute(route) {

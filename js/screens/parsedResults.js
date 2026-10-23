@@ -1,7 +1,7 @@
 import { state, saveState } from "../state.js";
 import { SECTION_TYPES } from "../utils/parser.js";
 import { escapeAttr, escapeHtml, normalizeMatchKey, sortZones } from "../utils/normalizer.js";
-import { emptyState, pageHeader, workflowStepper } from "../components/shell.js";
+import { emptyState, pageHeader } from "../components/shell.js";
 
 export function renderParsedResults(container, ctx) {
   const rows = filteredResultRecords(ctx);
@@ -18,11 +18,11 @@ export function renderParsedResults(container, ctx) {
 
   container.innerHTML = `
     ${pageHeader({
+      step: "results",
       title: "Check results",
       subtitle: "Every district the parser pulled out of your reports for the working period. Fix a misspelt district inline to re-run matching.",
       actions: `<button id="exportParsedButton" class="btn btn-secondary">Export records</button>${total ? (open ? `<button class="btn btn-primary" data-route="mapping">Fix ${open.toLocaleString()} match${open === 1 ? "" : "es"} →</button>` : `<button class="btn btn-primary" data-route="weekly">Open weekly sheet →</button>`) : ""}`
     })}
-    ${workflowStepper("results")}
     ${total ? `
     <div class="status-tabs" role="tablist" aria-label="Filter by match status">
       ${statusTab("all", "All records", total, activeStatus)}
@@ -173,6 +173,6 @@ function recordsTable(rows) {
 
 function confidenceCell(confidence) {
   const pct = Math.round(confidence * 100);
-  const color = pct >= 80 ? "#22c55e" : pct >= 60 ? "#f59e0b" : "#ef4444";
+  const color = pct >= 80 ? "var(--ok)" : pct >= 60 ? "var(--warn)" : "var(--bad)";
   return `<div class="confidence-cell"><span>${pct}%</span><div class="confidence-track"><div style="width:${pct}%; background:${color};"></div></div></div>`;
 }

@@ -18,9 +18,9 @@ export function renderZoneManager(container, ctx) {
     })}
 
     <div class="zone-metrics-grid">
-      ${zoneMetric("Total Zones", state.zones.length, "Across all parishes", "Z", "#dbeafe", "#2563eb")}
-      ${zoneMetric("Total Communities", totalCommunities, "Across all zones", "C", "#dcfce7", "#16a34a")}
-      ${zoneMetric("Total Districts", totalDistricts, "Across all communities", "D", "#ede9fe", "#7c3aed")}
+      ${zoneMetric("Total Zones", state.zones.length, "Across all parishes", "Z", "var(--brand-soft)", "var(--brand)")}
+      ${zoneMetric("Total Communities", totalCommunities, "Across all zones", "C", "var(--ok-soft)", "var(--ok)")}
+      ${zoneMetric("Total Districts", totalDistricts, "Across all communities", "D", "var(--plum-soft)", "var(--plum)")}
     </div>
 
     <div class="zone-manager-grid">

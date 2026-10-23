@@ -1,7 +1,7 @@
 import { state, saveState } from "../state.js";
 import { escapeAttr, escapeHtml, normalizeMatchKey, sortZones } from "../utils/normalizer.js";
 import { matchDistrict } from "../utils/matcher.js";
-import { emptyState, pageHeader, showToast, workflowStepper } from "../components/shell.js";
+import { emptyState, pageHeader, showToast } from "../components/shell.js";
 
 export function renderMappingReview(container, ctx) {
   const rows = filteredMappingRecords();
@@ -47,11 +47,11 @@ export function renderMappingReview(container, ctx) {
 
   container.innerHTML = `
     ${pageHeader({
+      step: "mapping",
       title: "Fix matches",
       subtitle: "Districts the parser couldn't confidently link to your master list. Confirm a suggestion and the fix is remembered for next time.",
       actions: headerActions
     })}
-    ${workflowStepper("mapping")}
     ${body}`;
 
   container.querySelector("#mappingHelpButton").onclick = openMappingGuideModal;

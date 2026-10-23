@@ -18,15 +18,16 @@ export function renderDashboard(container, ctx) {
 
   container.innerHTML = `
     ${pageHeader({
-      title: "Home",
-      subtitle: "Where things stand for the working period, and what to do next."
+      eyebrow: new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+      title: "Overview",
+      subtitle: "Where the working period stands, and what to do next."
     })}
     ${nextStepHero(status)}
     <div class="metric-grid">
-      ${metricCard("Completed", completed, `${pct(completed, totalCollections)}% of parsed work`, "✓", "#dcfce7", "#16a34a")}
-      ${metricCard("Pending", pending, `${pct(pending, totalCollections)}% forecast / backlog / late`, "…", "#fef3c7", "#d97706")}
-      ${metricCard("Missed", missed, `${pct(missed, totalCollections)}% incomplete`, "!", "#fee2e2", "#dc2626")}
-      ${metricCard("Districts", allDistricts.length, `${state.zones.length} zones · ${communitiesCount} communities`, "D", "#e0e7ff", "#4f46e5")}
+      ${metricCard("Completed", completed, `${pct(completed, totalCollections)}% of parsed work`, "✓", "var(--ok-soft)", "var(--ok)")}
+      ${metricCard("Pending", pending, `${pct(pending, totalCollections)}% forecast / backlog / late`, "…", "var(--warn-soft)", "var(--warn-ink)")}
+      ${metricCard("Missed", missed, `${pct(missed, totalCollections)}% incomplete`, "!", "var(--bad-soft)", "var(--bad)")}
+      ${metricCard("Districts", allDistricts.length, `${state.zones.length} zones · ${communitiesCount} communities`, "D", "var(--plum-soft)", "var(--plum)")}
     </div>
     <div class="home-grid">
       <div class="panel p-5 home-weeks">
@@ -93,7 +94,7 @@ function progressCard(label, dateLabel, count, total, color) {
 function buildDashboardWeeks(totalDistricts) {
   const period = state.collectionPeriod || {};
   const weeks = generateSelectedWeekColumns(period.year, period.startWeek, period.endWeek, period.month, period.mode);
-  const colors = ["#22c55e", "#f59e0b", "#3b82f6", "#2563eb", "#94a3b8"];
+  const colors = ["var(--ok)", "var(--warn)", "var(--brand)", "var(--brand)", "var(--faint)"];
   return weeks.map((week, index) => {
     const completedKeys = new Set(state.records.filter((record) => record.section === "completed" && record.reportDate >= week.start && record.reportDate <= week.end).map((record) => `${record.zone}|${record.normalizedDistrict || record.district}`));
     return { ...week, label: week.label.replace("-", " - "), completed: completedKeys.size, total: totalDistricts || 0, color: colors[index % colors.length] };
@@ -133,7 +134,7 @@ function buildZonePerformance(ctx) {
 }
 
 function zoneBar(zone) {
-  const color = zone.pct >= 70 ? "#22c55e" : zone.pct >= 40 ? "#eab308" : "#f97316";
+  const color = zone.pct >= 70 ? "var(--ok)" : zone.pct >= 40 ? "var(--warn)" : "var(--orange)";
   return `<div class="zone-bar"><div class="zone-bar-row"><span>${zone.name}</span><span>${zone.pct}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${zone.pct}%; background:${color};"></div></div></div>`;
 }
 

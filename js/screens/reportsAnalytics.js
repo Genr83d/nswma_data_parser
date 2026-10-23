@@ -243,7 +243,7 @@ function overallRateCard(analytics) {
       <strong>${analytics.completionRate}% <span class="${analytics.rateDelta >= 0 ? "positive-text" : "danger-text"}">${analytics.rateDelta >= 0 ? "↑" : "↓"} ${Math.abs(analytics.rateDelta)}%</span></strong>
       <small>vs previous collection period</small>
     </div>
-    <div class="donut small-donut" style="--pct:${analytics.completionRate}; --ring-color:#16a34a;"><span></span></div>
+    <div class="donut small-donut" style="--pct:${analytics.completionRate}; --ring-color:var(--ok);"><span></span></div>
   </section>`;
 }
 
@@ -259,7 +259,7 @@ function iconForTone(tone) {
 }
 
 function horizontalBar(label, rate) {
-  const color = rate >= 70 ? "#16a34a" : rate >= 45 ? "#f59e0b" : rate > 0 ? "#ef4444" : "#94a3b8";
+  const color = rate >= 70 ? "var(--ok)" : rate >= 45 ? "var(--warn)" : rate > 0 ? "var(--bad)" : "var(--faint)";
   return `<div class="bar-row"><span>${escapeHtml(label)}</span><div class="bar-track"><div style="width:${rate}%; background:${color}"></div></div><strong>${rate}%</strong></div>`;
 }
 
@@ -284,7 +284,7 @@ function performanceRow(zone) {
 }
 
 function sparkline(value) {
-  const color = value >= 70 ? "#16a34a" : value >= 45 ? "#f59e0b" : value > 0 ? "#ef4444" : "#94a3b8";
+  const color = value >= 70 ? "var(--ok)" : value >= 45 ? "var(--warn)" : value > 0 ? "var(--bad)" : "var(--faint)";
   return `<svg class="sparkline" viewBox="0 0 64 20" aria-label="${value}% trend"><polyline points="0,12 12,14 24,10 36,12 48,8 64,10" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="${value ? 1 : 0.45}" /></svg>`;
 }
 
