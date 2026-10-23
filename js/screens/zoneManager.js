@@ -1,5 +1,6 @@
 import { state, saveState, addActivity } from "../state.js";
 import { escapeAttr, escapeHtml, normalizeMatchKey, slugify, sortZones } from "../utils/normalizer.js";
+import { pageHeader } from "../components/shell.js";
 
 export function renderZoneManager(container, ctx) {
   ensureZoneManagerSelection();
@@ -10,16 +11,11 @@ export function renderZoneManager(container, ctx) {
   const totalDistricts = state.zones.reduce((sum, zone) => sum + zone.communities.reduce((inner, community) => inner + community.districts.length, 0), 0);
 
   container.innerHTML = `
-    <div class="zone-manager-topbar">
-      <div>
-        <h2>Zone Manager</h2>
-        <p>Manage zones, communities and districts</p>
-      </div>
-      <div class="results-actions">
-        <button id="importZonesButton" class="btn btn-secondary">Import Zones</button>
-        <button id="quickAddZoneButton" class="btn btn-primary">Add Zone</button>
-      </div>
-    </div>
+    ${pageHeader({
+      title: "Zones & districts",
+      subtitle: "The master list the parser matches against. Pick a zone, then a community, then edit a district and its aliases.",
+      actions: `<button id="viewAliasButton" class="btn btn-ghost">View aliases</button><button id="exportZonesButton" class="btn btn-secondary">Export all zones</button><button id="quickAddZoneButton" class="btn btn-primary">Add zone</button>`
+    })}
 
     <div class="zone-metrics-grid">
       ${zoneMetric("Total Zones", state.zones.length, "Across all parishes", "Z", "#dbeafe", "#2563eb")}
@@ -31,11 +27,9 @@ export function renderZoneManager(container, ctx) {
       <section class="panel zone-list-panel">
         <div class="zone-panel-heading">
           <h3>Zones (${state.zones.length})</h3>
-          <button id="zoneFilterButton" class="icon-button">Filter</button>
         </div>
         <input id="zoneSearch" class="field" placeholder="Search zones..." value="${escapeAttr(state.zoneManager.zoneSearch)}" />
         <div class="zone-list-scroll">${zoneListHtml()}</div>
-        <div class="zone-manager-pagination"><span>Showing 1 to ${Math.min(8, state.zones.length)} of ${state.zones.length} zones</span><div class="pager"><button class="btn btn-secondary">‹</button><button class="btn btn-primary">1</button><button class="btn btn-secondary">2</button><button class="btn btn-secondary">›</button></div></div>
       </section>
 
       <section class="panel community-browser-panel">
@@ -52,29 +46,7 @@ export function renderZoneManager(container, ctx) {
       </section>
     </div>
 
-    <div class="zone-manager-footer-grid">
-      <div class="panel tips-card zone-tips">
-        <strong>Tips</strong>
-        <ul>
-          <li>Use search and filters to quickly find zones, communities or districts.</li>
-          <li>Aliases help the parser match variations in report text to the correct district.</li>
-          <li>Deleting a zone, community or district cannot be undone.</li>
-        </ul>
-      </div>
-      <div class="panel quick-actions-panel">
-        <h3>Quick Actions</h3>
-        <div class="quick-action-buttons">
-          <button id="exportZonesButton" class="btn btn-secondary">Export All Zones</button>
-          <button id="viewAliasButton" class="btn btn-secondary">View Alias List</button>
-        </div>
-      </div>
-      <div class="panel legend-panel">
-        <h3>Legend</h3>
-        <p><span class="legend-dot" style="background:#16a34a"></span>Active <small>Visible and used in the system</small></p>
-        <p><span class="legend-dot" style="background:#f59e0b"></span>Inactive <small>Hidden from selection</small></p>
-        <p><span class="legend-dot" style="background:#ef4444"></span>Archived <small>No longer in use</small></p>
-      </div>
-    </div>`;
+    <p class="page-footnote">Aliases teach the parser spelling variations it should treat as the same district. Deleting a zone, community, or district cannot be undone.</p>`;
 
   bindZoneManagerEvents(container, ctx);
 }
@@ -275,7 +247,6 @@ function bindZoneManagerEvents(container, ctx) {
     addActivity(`Added community ${community.name}.`);
     persist();
   };
-  container.querySelector("#importZonesButton").onclick = () => alert("Import will accept the full zones JSON dataset in a future iteration.");
   container.querySelector("#exportZonesButton").onclick = () => ctx.openExportModal({ dataset: "district-details" });
   container.querySelector("#viewAliasButton").onclick = () => alert(aliasSummary());
 

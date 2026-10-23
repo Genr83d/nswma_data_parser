@@ -1,6 +1,6 @@
 import { state, saveState, addActivity } from "../state.js";
 import { escapeAttr, escapeHtml, normalizeZoneName, sortZones } from "../utils/normalizer.js";
-import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { pageHeader, showToast, workflowStepper } from "../components/shell.js";
 import { getCollectionPeriodDateRange } from "../utils/weekCalendar.js";
 
 export function renderWeeklyCollectionSheet(container, ctx) {
@@ -16,20 +16,13 @@ export function renderWeeklyCollectionSheet(container, ctx) {
   const communities = getCommunitiesForFilter();
 
   container.innerHTML = `
-    <div class="weekly-topbar">
-      <div>
-        <h2>Weekly Collection Sheet</h2>
-        <p>Generate and manage weekly collection data by zone, community, and district.</p>
-      </div>
-      <div class="weekly-actions">
-        ${collectionPeriodControlsHtml("weekly", "Quick Preset")}
-        <button id="importWeeklyButton" class="btn btn-secondary">Import Data</button>
-        <button id="exportWeeklyButton" class="btn btn-secondary">Export Excel</button>
-        <button id="exportWeeklyPdfButton" class="btn btn-secondary">Export PDF</button>
-        <button id="reviewFlaggedButton" class="btn ${flaggedCount > 0 ? 'btn-amber' : 'btn-secondary'}">Review Flagged${flaggedCount > 0 ? ` (${flaggedCount})` : ''}</button>
-        <button id="saveWeeklyButton" class="btn btn-primary">Save Sheet</button>
-      </div>
-    </div>
+    ${pageHeader({
+      title: "Weekly sheet",
+      subtitle: "Each district's collections per week for the working period. Click a cell to correct it; edits save automatically.",
+      actions: `<button id="reviewFlaggedButton" class="btn ${flaggedCount > 0 ? "btn-amber" : "btn-ghost"}">Review flagged${flaggedCount > 0 ? ` (${flaggedCount})` : ""}</button><button id="exportWeeklyPdfButton" class="btn btn-secondary">Export PDF</button><button id="exportWeeklyButton" class="btn btn-primary">Export Excel</button>`
+    })}
+    ${workflowStepper("weekly")}
+    ${state.records.length ? "" : `<div class="inline-notice tone-info"><strong>No reports parsed for this sheet yet.</strong> Rows below only show each district's default pattern. <button class="link-button" data-route="upload">Import reports</button></div>`}
 
     <section class="panel weekly-filter-panel">
       <label><span>Zone</span><select id="weeklyZoneFilter" class="field"><option value="all">All Zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.weeklySheet.zone === zone.name ? "selected" : ""}>${escapeHtml(zone.name)}</option>`).join("")}</select></label>
@@ -41,7 +34,6 @@ export function renderWeeklyCollectionSheet(container, ctx) {
         <label><input id="weeklyShowEmpty" type="checkbox" ${state.weeklySheet.showEmpty ? "checked" : ""} /> Show Empty Cells</label>
         <label><input id="weeklyFreezeColumns" type="checkbox" ${state.weeklySheet.freezeColumns ? "checked" : ""} /> Freeze Columns</label>
       </div>
-      <button id="weeklyMoreFiltersButton" class="btn btn-secondary">More Filters</button>
     </section>
 
     <section class="panel weekly-summary-strip">
@@ -75,41 +67,22 @@ export function renderWeeklyCollectionSheet(container, ctx) {
       </div>
     </section>
 
-    <div class="weekly-footer-grid">
-      <div class="panel weekly-legend-panel">
-        <h3>Cell Legend</h3>
-        <div class="weekly-legend-grid">
-          <span class="weekly-cell completed">Completed</span>
-          <span class="weekly-cell daily">Daily / Nightly</span>
-          <span class="weekly-cell partial">Partial / Pending</span>
-          <span class="weekly-cell missed">Missed</span>
-          <span class="weekly-cell nodata">No Data</span>
-        </div>
+    <div class="weekly-footer-bar">
+      <div class="weekly-legend-grid" aria-label="Cell legend">
+        <span class="weekly-cell completed">Completed</span>
+        <span class="weekly-cell daily">Daily / Nightly</span>
+        <span class="weekly-cell partial">Partial / Pending</span>
+        <span class="weekly-cell missed">Missed</span>
+        <span class="weekly-cell nodata">No data</span>
       </div>
-      <div class="panel supported-values-panel">
-        <h3>Supported Values</h3>
-        <ul>
-          <li><strong>DAILY</strong> - Collected every day in the week</li>
-          <li><strong>NIGHTLY</strong> - Collected every night in the week</li>
-          <li><strong>Specific Dates</strong> - e.g., 5/20, 5/22</li>
-          <li><strong>Date Ranges</strong> - e.g., 5/19 - 5/24</li>
-          <li><strong>Multiple Dates</strong> - e.g., 5/19, 5/21, 5/23</li>
-        </ul>
+      <div class="weekly-bulk-actions">
+        <span>Visible rows:</span>
+        <button class="btn btn-ghost btn-sm weekly-action-button" data-fill="DAILY">Fill DAILY</button>
+        <button class="btn btn-ghost btn-sm weekly-action-button" data-fill="NIGHTLY">Fill NIGHTLY</button>
+        <button id="clearWeeklyOverridesButton" class="btn btn-ghost btn-sm">Clear manual edits</button>
       </div>
-      <div class="panel weekly-quick-actions">
-        <h3>Quick Actions</h3>
-        <div>
-          <button class="weekly-action-button" data-fill="DAILY">Fill DAILY for Visible Rows</button>
-          <button class="weekly-action-button" data-fill="NIGHTLY">Fill NIGHTLY for Visible Rows</button>
-          <button id="clearWeeklyOverridesButton" class="weekly-action-button">Clear Manual Cells</button>
-          <button id="copyWeekDataButton" class="weekly-action-button">Copy Week Data</button>
-        </div>
-      </div>
-      <div class="panel weekly-note-panel">
-        <h3>Note</h3>
-        <p>Edit any cell to update data. Changes are auto-saved locally.</p>
-      </div>
-    </div>`;
+    </div>
+    <p class="page-footnote">Cells accept DAILY, NIGHTLY, specific dates (5/20, 5/22), or ranges (5/19 - 5/24).</p>`;
 
   bindWeeklyEvents(container, ctx, visibleRows, weekly.weeks);
 }
@@ -318,7 +291,6 @@ function cellValueForSection(row, week, section) {
 }
 
 function bindWeeklyEvents(container, ctx, visibleRows, weeks) {
-  bindCollectionPeriodControls(container, "weekly", ctx);
   const saveFilters = () => {
     state.weeklySheet.zone = container.querySelector("#weeklyZoneFilter").value;
     state.weeklySheet.community = container.querySelector("#weeklyCommunityFilter").value;
@@ -336,13 +308,6 @@ function bindWeeklyEvents(container, ctx, visibleRows, weeks) {
   container.querySelector("#weeklySearchInput").oninput = saveFilters;
   container.querySelector("#exportWeeklyButton").onclick = () => ctx.openExportModal({ dataset: "weekly" });
   container.querySelector("#exportWeeklyPdfButton").onclick = () => exportWeeklyPdf(visibleRows, weeks);
-  container.querySelector("#saveWeeklyButton").onclick = () => {
-    saveState();
-    addActivity("Weekly collection sheet saved.");
-    ctx.refreshRoute();
-  };
-  container.querySelector("#importWeeklyButton").onclick = () => alert("Import will accept Excel or CSV weekly collection logs in a future iteration.");
-  container.querySelector("#weeklyMoreFiltersButton").onclick = () => alert("Additional filters will include parish, contractor, monitor and route status.");
   container.querySelectorAll(".weekly-zone-toggle").forEach((button) => {
     button.onclick = () => {
       state.weeklySheet.collapsedZones ||= {};
@@ -390,11 +355,11 @@ function bindWeeklyEvents(container, ctx, visibleRows, weeks) {
     };
   });
   container.querySelector("#clearWeeklyOverridesButton").onclick = () => {
+    if (!confirm("Clear every manual cell edit on the weekly sheet? Parsed values stay.")) return;
     state.weeklySheet.overrides = {};
     saveState();
     ctx.refreshRoute();
   };
-  container.querySelector("#copyWeekDataButton").onclick = () => navigator.clipboard?.writeText("Weekly collection sheet copied from WCIS.");
 
   container.querySelectorAll(".weekly-flag-checkbox").forEach((checkbox) => {
     checkbox.onchange = () => {
@@ -411,8 +376,8 @@ function bindWeeklyEvents(container, ctx, visibleRows, weeks) {
       const count = Object.values(state.weeklySheet.flagged).filter(Boolean).length;
       const btn = container.querySelector("#reviewFlaggedButton");
       if (btn) {
-        btn.textContent = count > 0 ? `Review Flagged (${count})` : "Review Flagged";
-        btn.className = `btn ${count > 0 ? "btn-amber" : "btn-secondary"}`;
+        btn.textContent = count > 0 ? `Review flagged (${count})` : "Review flagged";
+        btn.className = `btn ${count > 0 ? "btn-amber" : "btn-ghost"}`;
       }
     };
   });
@@ -422,7 +387,7 @@ function bindWeeklyEvents(container, ctx, visibleRows, weeks) {
     const allRows = buildSheetRows(allWeekly);
     const flaggedRows = allRows.filter((row) => row.type === "district" && state.weeklySheet.flagged?.[`${row.zone}|${row.community}|${row.district}`]);
     if (!flaggedRows.length) {
-      alert("No districts flagged. Tick the checkboxes on district rows to flag them for review.");
+      showToast("Nothing flagged yet. Tick the box at the start of a district row to flag it.", "warn");
       return;
     }
     generateFlagReviewReport(flaggedRows, allWeekly.weeks);

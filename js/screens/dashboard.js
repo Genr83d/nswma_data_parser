@@ -1,8 +1,8 @@
 import { state } from "../state.js";
 import { uniqueDistrictTargets } from "../utils/matcher.js";
-import { escapeHtml, sortZones } from "../utils/normalizer.js";
+import { escapeHtml, sampleReport, sortZones } from "../utils/normalizer.js";
 import { generateSelectedWeekColumns } from "../utils/weekCalendar.js";
-import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { nextWorkflowStep, pageHeader, workflowStatus } from "../components/shell.js";
 
 export function renderDashboard(container, ctx) {
   const allDistricts = uniqueDistrictTargets(state);
@@ -14,50 +14,71 @@ export function renderDashboard(container, ctx) {
   const communitiesCount = state.zones.reduce((sum, zone) => sum + zone.communities.length, 0);
   const totalCollections = completed + pending + missed;
   const weekly = buildDashboardWeeks(allDistricts.length);
+  const status = workflowStatus();
 
   container.innerHTML = `
-    <div class="dashboard-topbar">
-      <div class="dashboard-title">
-        <div class="menu-glyph">=</div>
-        <div><h2>Dashboard</h2><p>Overview of collection activities and parser performance</p></div>
-      </div>
-      <div class="dashboard-actions">
-        ${collectionPeriodControlsHtml("dashboard", "Quick Preset")}
-        <button id="dashboardRefreshButton" class="btn btn-primary">Refresh Data</button>
-      </div>
-    </div>
+    ${pageHeader({
+      title: "Home",
+      subtitle: "Where things stand for the working period, and what to do next."
+    })}
+    ${nextStepHero(status)}
     <div class="metric-grid">
-      ${metricCard("Total Zones", state.zones.length, "Across master list", "Z", "#dbeafe", "#2563eb")}
-      ${metricCard("Total Communities", communitiesCount, "All active zones", "C", "#dcfce7", "#16a34a")}
-      ${metricCard("Total Districts", allDistricts.length, "Editable district records", "D", "#ede9fe", "#7c3aed")}
-      ${metricCard("Completed", completed, `${pct(completed, totalCollections)}% of parsed work`, "OK", "#dcfce7", "#16a34a")}
-      ${metricCard("Pending", pending, `${pct(pending, totalCollections)}% forecast/backlog`, "P", "#fef3c7", "#f59e0b")}
-      ${metricCard("Missed", missed, `${pct(missed, totalCollections)}% incomplete`, "M", "#fee2e2", "#ef4444")}
+      ${metricCard("Completed", completed, `${pct(completed, totalCollections)}% of parsed work`, "✓", "#dcfce7", "#16a34a")}
+      ${metricCard("Pending", pending, `${pct(pending, totalCollections)}% forecast / backlog / late`, "…", "#fef3c7", "#d97706")}
+      ${metricCard("Missed", missed, `${pct(missed, totalCollections)}% incomplete`, "!", "#fee2e2", "#dc2626")}
+      ${metricCard("Districts", allDistricts.length, `${state.zones.length} zones · ${communitiesCount} communities`, "D", "#e0e7ff", "#4f46e5")}
     </div>
-    <div class="dashboard-grid">
-      <div class="panel p-5">
-        <div class="section-heading"><h3>Weekly Progress Overview</h3></div>
+    <div class="home-grid">
+      <div class="panel p-5 home-weeks">
+        <div class="section-heading"><h3>Weekly progress</h3><button class="btn btn-ghost btn-sm" data-route="weekly">Open sheet</button></div>
         <div class="weekly-card-grid">${weekly.map((week, index) => progressCard(`Week ${index + 1}`, week.label, week.completed, week.total, week.color)).join("")}</div>
       </div>
       <div class="panel p-5">
-        <div class="section-heading"><h3>Collection Status Map</h3><select class="field" style="width: 150px"><option>All Zones</option>${sortZones(state.zones).map((zone) => `<option>${zone.name}</option>`).join("")}</select></div>
-        <div class="map-panel"><div class="jamaica-shape"></div><span class="map-label" style="left: 12%; top: 105px;">West</span><span class="map-label" style="left: 42%; top: 88px;">Central</span><span class="map-label" style="left: 68%; top: 118px;">Kingston</span><span class="map-label" style="left: 82%; top: 92px;">East</span></div>
-        <div class="legend">${legendItem("Completed", "#22c55e")}${legendItem("In Progress", "#eab308")}${legendItem("Pending", "#f97316")}${legendItem("Missed", "#ef4444")}${legendItem("No Data", "#cbd5e1")}</div>
+        <div class="section-heading"><h3>Needs attention</h3></div>
+        <div class="space-y-3">${alertsHtml(unmapped, missed, pending)}</div>
       </div>
-    </div>
-    <div class="dashboard-bottom-grid">
-      <div class="panel p-5"><div class="section-heading"><h3>Recent Activity</h3><button class="btn btn-secondary" data-route="results">View All</button></div><div class="space-y-2">${recentActivityHtml()}</div></div>
-      <div class="panel p-5"><div class="section-heading"><h3>Alerts & Notifications</h3></div><div class="space-y-3">${alertsHtml(unmapped, missed, pending)}</div></div>
-      <div class="panel p-5"><div class="section-heading"><h3>Zone Completion Rate</h3><button class="btn btn-secondary" data-route="weekly">View Report</button></div><div>${buildZonePerformance(ctx).map(zoneBar).join("") || `<p class="text-sm text-slate-500">Parse reports to see zone performance.</p>`}</div><p class="mt-5 text-xs text-slate-500">Based on current parsed records and filters</p></div>
+      <div class="panel p-5">
+        <div class="section-heading"><h3>Zone completion</h3><button class="btn btn-ghost btn-sm" data-route="reports">Analytics</button></div>
+        <div>${buildZonePerformance(ctx).map(zoneBar).join("") || `<p class="text-sm text-slate-500">Parse reports to see zone performance.</p>`}</div>
+      </div>
+      <div class="panel p-5">
+        <div class="section-heading"><h3>Recent activity</h3></div>
+        <div class="space-y-2">${recentActivityHtml()}</div>
+      </div>
     </div>`;
 
-  bindCollectionPeriodControls(container, "dashboard", ctx);
-  container.querySelector("#dashboardRefreshButton").onclick = () => {
-    ctx.addActivity("Dashboard data refreshed.");
-    ctx.saveState();
-    ctx.refreshRoute();
-  };
-  container.querySelectorAll("[data-route]").forEach((button) => (button.onclick = () => ctx.navigate(button.dataset.route)));
+  const sampleButton = container.querySelector("#homeSampleButton");
+  if (sampleButton) {
+    sampleButton.onclick = () => {
+      state.rawText = sampleReport();
+      state.uploadedFiles = [];
+      ctx.addActivity("Loaded sample report text.");
+      ctx.saveState();
+      ctx.navigate("upload");
+    };
+  }
+}
+
+function nextStepHero(status) {
+  const next = nextWorkflowStep(status);
+  const copy = !status.parsed
+    ? status.hasInput
+      ? { tone: "info", title: "Your reports are loaded. Parse them to extract collection data.", detail: `${status.files ? `${status.files} file${status.files === 1 ? "" : "s"}` : `${status.characters.toLocaleString()} characters`} waiting in Import reports.` }
+      : { tone: "info", title: "Start by importing this period's WhatsApp reports.", detail: "Drop the exported .txt chat files or paste the report text. Everything is processed on this computer." }
+    : status.open
+      ? { tone: "warn", title: `${status.open.toLocaleString()} district${status.open === 1 ? "" : "s"} couldn't be matched automatically.`, detail: "Confirm a suggestion or add an alias for each one so the weekly sheet is complete." }
+      : { tone: "done", title: "Every parsed district is matched.", detail: `${status.records.toLocaleString()} records are ready in the weekly collection sheet.` };
+  return `<section class="next-step-hero tone-${copy.tone}">
+    <div class="next-step-copy">
+      <span class="next-step-eyebrow">Next step</span>
+      <h3>${escapeHtml(copy.title)}</h3>
+      <p>${escapeHtml(copy.detail)}</p>
+    </div>
+    <div class="next-step-actions">
+      ${!status.parsed && !status.hasInput ? `<button class="btn btn-ghost" id="homeSampleButton" type="button">Try sample data</button>` : ""}
+      <button class="btn btn-primary btn-lg" data-route="${next.route}" type="button">${escapeHtml(next.label)} →</button>
+    </div>
+  </section>`;
 }
 
 function metricCard(label, value, subtext, icon, background, color) {
@@ -86,19 +107,20 @@ function legendItem(label, color) {
 function recentActivityHtml() {
   const generated = state.records.slice(0, 5).map((record) => ({ message: `${record.district} marked as ${record.section}`, at: record.reportDate || new Date().toISOString(), badge: record.section, status: record.status }));
   const activities = state.recentActivity.length ? state.recentActivity : generated;
-  if (!activities.length) return `<div class="activity-item bg-slate-50"><div class="activity-icon bg-blue-100 text-blue-700">I</div><div><p>No activity yet</p><span>Upload or paste reports to begin</span></div><span class="status-pill status-needs_review">Ready</span></div>`;
+  if (!activities.length) return `<div class="activity-item bg-slate-50"><div class="activity-icon bg-blue-100 text-blue-700">I</div><div><p>No activity yet</p><span>Import or paste reports to begin</span></div><span class="status-pill status-needs_review">Ready</span></div>`;
   return activities.slice(0, 5).map((item) => `<div class="activity-item bg-white"><div class="activity-icon ${item.status === "unmapped" ? "bg-red-100 text-red-700" : item.status === "needs_review" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}">${(item.badge || "A").slice(0, 1).toUpperCase()}</div><div><p>${escapeHtml(item.message)}</p><span>${new Date(item.at).toLocaleString()}</span></div><span class="status-pill status-${item.status || "matched"}">${(item.status || "matched").replace("_", " ")}</span></div>`).join("");
 }
 
 function alertsHtml(unmapped, missed, pending) {
   const alerts = [];
-  if (missed) alerts.push({ tone: "red", title: `${missed} missed collections found`, detail: "Review incomplete areas and follow up with supervisors" });
-  if (unmapped) alerts.push({ tone: "amber", title: `${unmapped} records need mapping review`, detail: "Approve suggestions or add aliases for future parsing" });
-  if (pending) alerts.push({ tone: "amber", title: `${pending} pending or forecast records`, detail: "Track backlog and forecast areas in the weekly sheet" });
-  if (!state.records.length) alerts.push({ tone: "blue", title: "No reports parsed yet", detail: "Upload a WhatsApp .txt file or paste raw report text" });
-  if (!alerts.length) alerts.push({ tone: "green", title: "No active dashboard alerts", detail: "Current parsed records are mapped and review-ready" });
+  if (unmapped) alerts.push({ tone: "amber", title: `${unmapped} records need matching`, detail: "Approve suggestions or add aliases for future parsing", route: "mapping" });
+  if (missed) alerts.push({ tone: "red", title: `${missed} missed collections`, detail: "Review incomplete areas and follow up with supervisors", route: "weekly" });
+  if (pending) alerts.push({ tone: "amber", title: `${pending} pending or forecast records`, detail: "Track backlog and forecast areas in the weekly sheet", route: "weekly" });
+  if (!state.records.length) alerts.push({ tone: "blue", title: "No reports parsed yet", detail: "Import WhatsApp .txt files or paste report text", route: "upload" });
+  if (!alerts.length) alerts.push({ tone: "green", title: "Nothing needs attention", detail: "Parsed records are matched and ready" });
   const styles = { red: "bg-red-50 text-red-700", amber: "bg-amber-50 text-amber-700", blue: "bg-blue-50 text-blue-700", green: "bg-emerald-50 text-emerald-700" };
-  return alerts.map((alert) => `<div class="alert-item ${styles[alert.tone]}"><div class="alert-icon bg-white">${alert.tone.slice(0, 1).toUpperCase()}</div><div><p>${alert.title}</p><span>${alert.detail}</span></div><strong>&gt;</strong></div>`).join("");
+  const icons = { red: "!", amber: "?", blue: "i", green: "✓" };
+  return alerts.map((alert) => `<${alert.route ? `button type="button" data-route="${alert.route}"` : "div"} class="alert-item ${styles[alert.tone]}"><div class="alert-icon bg-white">${icons[alert.tone]}</div><div><p>${alert.title}</p><span>${alert.detail}</span></div>${alert.route ? "<strong>›</strong>" : "<span></span>"}</${alert.route ? "button" : "div"}>`).join("");
 }
 
 function buildZonePerformance(ctx) {

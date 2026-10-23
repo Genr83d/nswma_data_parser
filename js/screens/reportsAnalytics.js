@@ -1,25 +1,18 @@
 import { state } from "../state.js";
 import { escapeHtml, formatDisplayDate, percent, sortZones } from "../utils/normalizer.js";
 import { generateSelectedWeekColumns } from "../utils/weekCalendar.js";
-import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { pageHeader } from "../components/shell.js";
 
 export function renderReportsAnalytics(container, ctx) {
   const records = ctx.filteredRecords();
   const analytics = buildAnalytics(records);
 
   container.innerHTML = `
-    <div class="analytics-topbar">
-      <div>
-        <h2>Reports & Analytics</h2>
-        <p>Insights into collection performance across zones, communities, and districts.</p>
-      </div>
-      <div class="analytics-actions">
-        ${collectionPeriodControlsHtml("analytics", "Quick Preset")}
-        <button id="analyticsFilterButton" class="btn btn-secondary">Filters</button>
-        <button id="exportAnalyticsButton" class="btn btn-primary analytics-export-button">Export Analytics</button>
-      </div>
-    </div>
-
+    ${pageHeader({
+      title: "Analytics",
+      subtitle: "Collection performance across zones, communities, and districts for the working period.",
+      actions: `<button id="exportAnalyticsButton" class="btn btn-primary">Export analytics</button>`
+    })}
     <div class="analytics-kpi-grid">
       ${overallRateCard(analytics)}
       ${kpiCard("Total Collections", analytics.total.toLocaleString(), `${analytics.completed.toLocaleString()} completed`, "blue", `Pending: ${analytics.pending.toLocaleString()} | Missed: ${analytics.missed.toLocaleString()}`)}
@@ -119,15 +112,7 @@ export function renderReportsAnalytics(container, ctx) {
       </aside>
     </div>`;
 
-  bindCollectionPeriodControls(container, "analytics", ctx);
   container.querySelector("#exportAnalyticsButton").onclick = () => ctx.openExportModal({ dataset: "zone-performance" });
-  container.querySelectorAll("[data-route]").forEach((button) => {
-    button.addEventListener("click", () => ctx.navigate(button.dataset.route));
-  });
-  container.querySelector("#analyticsFilterButton").onclick = () => {
-    ctx.addActivity("Opened analytics filters.");
-    alert("Use the year and week range controls on this screen to change the analytics period.");
-  };
 }
 
 function buildAnalytics(records) {

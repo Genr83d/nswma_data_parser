@@ -4,46 +4,52 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zone Report Parser</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="./vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="./css/base.css" />
     <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./css/app.css" />
   </head>
-  <body class="bg-slate-50 text-slate-900">
+  <body>
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand-lockup">
           <div class="brand-mark">WC</div>
           <div>
             <h1>WCIS</h1>
-            <p>Waste Collection Intelligence System</p>
+            <p>Waste Collection Intelligence</p>
           </div>
         </div>
 
-        <nav class="sidebar-nav">
-          <button class="nav-tab active" data-route="dashboard"><span>Dashboard</span></button>
-          <button class="nav-tab" data-route="upload"><span>Upload / Parse Reports</span></button>
-          <button class="nav-tab" data-route="results"><span>Parsed Results</span></button>
-          <button class="nav-tab" data-route="mapping"><span>Mapping Review</span></button>
-          <button class="nav-tab" data-route="weekly"><span>Weekly Collection Sheet</span></button>
-          <button class="nav-tab" data-route="zones"><span>Zone Manager</span></button>
-          <button class="nav-tab" data-route="map"><span>Map View</span></button>
-          <button class="nav-tab" data-route="reports"><span>Reports & Analytics</span></button>
+        <nav class="sidebar-nav" aria-label="Main">
+          <button class="nav-tab" data-route="dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Home</span></button>
+
+          <p class="nav-group-label">Workflow</p>
+          <button class="nav-tab nav-step" data-route="upload"><span class="nav-step-number" aria-hidden="true">1</span><span class="nav-label">Import reports</span><span class="nav-badge" data-nav-badge="upload"></span></button>
+          <button class="nav-tab nav-step" data-route="results"><span class="nav-step-number" aria-hidden="true">2</span><span class="nav-label">Check results</span><span class="nav-badge" data-nav-badge="results"></span></button>
+          <button class="nav-tab nav-step" data-route="mapping"><span class="nav-step-number" aria-hidden="true">3</span><span class="nav-label">Fix matches</span><span class="nav-badge" data-nav-badge="mapping"></span></button>
+          <button class="nav-tab nav-step" data-route="weekly"><span class="nav-step-number" aria-hidden="true">4</span><span class="nav-label">Weekly sheet</span><span class="nav-badge" data-nav-badge="weekly"></span></button>
+
+          <p class="nav-group-label">Insights</p>
+          <button class="nav-tab" data-route="reports"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">Analytics</span></button>
+          <button class="nav-tab" data-route="map"><span class="nav-icon" aria-hidden="true">◎</span><span class="nav-label">Map</span></button>
+
+          <p class="nav-group-label">Setup</p>
+          <button class="nav-tab" data-route="zones"><span class="nav-icon" aria-hidden="true">☰</span><span class="nav-label">Zones &amp; districts</span></button>
         </nav>
 
-        <div class="sidebar-user">
-          <div class="user-avatar">A</div>
-          <div>
-            <p>Admin User</p>
-            <span>Operations</span>
-          </div>
-        </div>
+        <p class="sidebar-footnote">Everything runs on this computer. Report text is never uploaded.</p>
       </aside>
 
-      <main id="appContent" class="main-content"></main>
+      <div class="main-column">
+        <header id="periodBar" class="period-bar" aria-label="Collection period"></header>
+        <main id="appContent" class="main-content"></main>
+      </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <div id="toastRegion" class="toast-region" role="status" aria-live="polite"></div>
+
+    <script src="./vendor/xlsx/xlsx.full.min.js"></script>
+    <script src="./vendor/leaflet/leaflet.js"></script>
     <script type="module" src="./js/app.js"></script>
   </body>
 </html>

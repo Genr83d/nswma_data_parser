@@ -1,7 +1,7 @@
 import { state, saveState } from "../state.js";
 import { SECTION_TYPES } from "../utils/parser.js";
-import { escapeAttr, escapeHtml, normalizeMatchKey, percent, sortZones } from "../utils/normalizer.js";
-import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { escapeAttr, escapeHtml, normalizeMatchKey, sortZones } from "../utils/normalizer.js";
+import { emptyState, pageHeader, workflowStepper } from "../components/shell.js";
 
 export function renderParsedResults(container, ctx) {
   const rows = filteredResultRecords(ctx);
@@ -13,37 +13,52 @@ export function renderParsedResults(container, ctx) {
   const unmatched = state.records.filter((record) => record.status === "unmapped").length;
   const communities = Array.from(new Set(state.records.map((record) => record.community).filter(Boolean))).sort();
 
+  const open = needsReview + unmatched;
+  const activeStatus = state.resultFilters.status || "all";
+
   container.innerHTML = `
-    <div class="results-topbar">
-      <div class="results-title"><div class="results-title-icon">R</div><div><h2>Parsed Results</h2><p>Review extracted records from uploaded reports</p></div></div>
-      <div class="results-actions"><button class="btn btn-secondary" data-route="upload">Back to Upload</button><button id="exportParsedButton" class="btn btn-secondary">Export Parsed Records</button><button class="btn btn-primary" data-route="mapping">Proceed to Mapping Review (${needsReview + unmatched})</button></div>
+    ${pageHeader({
+      title: "Check results",
+      subtitle: "Every district the parser pulled out of your reports for the working period. Fix a misspelt district inline to re-run matching.",
+      actions: `<button id="exportParsedButton" class="btn btn-secondary">Export records</button>${total ? (open ? `<button class="btn btn-primary" data-route="mapping">Fix ${open.toLocaleString()} match${open === 1 ? "" : "es"} →</button>` : `<button class="btn btn-primary" data-route="weekly">Open weekly sheet →</button>`) : ""}`
+    })}
+    ${workflowStepper("results")}
+    ${total ? `
+    <div class="status-tabs" role="tablist" aria-label="Filter by match status">
+      ${statusTab("all", "All records", total, activeStatus)}
+      ${statusTab("matched", "Matched", matched, activeStatus, "matched")}
+      ${statusTab("needs_review", "Needs review", needsReview, activeStatus, "needs_review")}
+      ${statusTab("unmapped", "Unmatched", unmatched, activeStatus, "unmapped")}
     </div>
-    <div class="results-metrics">
-      ${resultMetric("Total Records", total, `Extracted from ${(state.uploadedFiles || []).length || (state.rawText ? 1 : 0)} report(s)`, "R", "#dbeafe", "#2563eb")}
-      ${resultMetric("Matched", matched, `${percent(matched, total)}%`, "✓", "#dcfce7", "#16a34a")}
-      ${resultMetric("Needs Review", needsReview, `${percent(needsReview, total)}%`, "!", "#fef3c7", "#f59e0b")}
-      ${resultMetric("Unmatched", unmatched, `${percent(unmatched, total)}%`, "×", "#fee2e2", "#ef4444")}
-    </div>
-    <div class="results-filter-row">
-      ${collectionPeriodControlsHtml("results", "Week Filter")}
-      <label><span>Zone Filter</span><select id="resultsZoneFilter" class="field"><option value="all">All Zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.filters.zone === zone.name ? "selected" : ""}>${zone.name}</option>`).join("")}</select></label>
-      <label><span>Community Filter</span><select id="resultsCommunityFilter" class="field"><option value="all">All Communities</option>${communities.map((community) => `<option value="${escapeAttr(community)}" ${state.resultFilters.community === community ? "selected" : ""}>${community}</option>`).join("")}</select></label>
-      <label><span>Section Type</span><select id="resultsSectionFilter" class="field"><option value="all">All Section Types</option>${SECTION_TYPES.map((section) => `<option value="${section}" ${state.resultFilters.section === section ? "selected" : ""}>${section}</option>`).join("")}</select></label>
-      <label><span>Status Filter</span><select id="resultsStatusFilter" class="field"><option value="all">All Statuses</option><option value="matched" ${state.resultFilters.status === "matched" ? "selected" : ""}>Matched</option><option value="needs_review" ${state.resultFilters.status === "needs_review" ? "selected" : ""}>Needs Review</option><option value="unmapped" ${state.resultFilters.status === "unmapped" ? "selected" : ""}>Unmatched</option></select></label>
-      <label class="search-label"><span>Search</span><input id="resultsSearch" class="field" placeholder="Search district, zone..." value="${escapeAttr(state.resultFilters.search)}" /></label>
+    <div class="filter-toolbar">
+      <label class="search-label"><span>Search</span><input id="resultsSearch" class="field" placeholder="District, zone, or report text…" value="${escapeAttr(state.resultFilters.search)}" /></label>
+      <label><span>Zone</span><select id="resultsZoneFilter" class="field"><option value="all">All zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.filters.zone === zone.name ? "selected" : ""}>${zone.name}</option>`).join("")}</select></label>
+      <label><span>Community</span><select id="resultsCommunityFilter" class="field"><option value="all">All communities</option>${communities.map((community) => `<option value="${escapeAttr(community)}" ${state.resultFilters.community === community ? "selected" : ""}>${community}</option>`).join("")}</select></label>
+      <label><span>Section</span><select id="resultsSectionFilter" class="field"><option value="all">All sections</option>${SECTION_TYPES.map((section) => `<option value="${section}" ${state.resultFilters.section === section ? "selected" : ""}>${section}</option>`).join("")}</select></label>
+      <input id="resultsStatusFilter" type="hidden" value="${escapeAttr(activeStatus)}" />
     </div>
     <div class="panel results-table-panel">${recordsTable(pageRows, ctx)}${resultsTableFooter(rows.length, pagination)}</div>
-    <div class="results-help-grid"><div class="panel status-guide"><h3>Status Guide</h3><div>${statusGuideItem("Matched", "Record matched to a known district.", "status-matched")}${statusGuideItem("Needs Review", "Low confidence match or needs confirmation.", "status-needs_review")}${statusGuideItem("Unmatched", "No matching district found.", "status-unmapped")}${statusGuideItem("Ignored", "Filtered out or not a collection entry.", "status-ignored")}</div></div><div class="panel result-tip"><h3>Tip</h3><p>Click Export Parsed Records to download this table, or edit district text directly to re-run matching.</p></div></div>`;
+    <p class="page-footnote">Matched: linked to a district in your master list. Needs review: a likely match that needs confirming. Unmatched: no close district found. Ignored: rejected in Fix matches.</p>`
+    : `<div class="panel">${emptyState({ icon: "↑", title: "No records yet", body: "Import and parse your WhatsApp reports to see the extracted districts here.", action: `<button class="btn btn-primary" data-route="upload">Import reports →</button>` })}</div>`}`;
 
-  container.querySelectorAll("[data-route]").forEach((button) => (button.onclick = () => ctx.navigate(button.dataset.route)));
+  if (!total) {
+    container.querySelector("#exportParsedButton").onclick = () => ctx.openExportModal({ dataset: "parsed" });
+    return;
+  }
+  container.querySelectorAll(".status-tab").forEach((tab) => {
+    tab.onclick = () => {
+      container.querySelector("#resultsStatusFilter").value = tab.dataset.status;
+      applyResultFilters(container, ctx);
+    };
+  });
   container.querySelector("#exportParsedButton").onclick = () => ctx.openExportModal({ dataset: "parsed" });
-  bindCollectionPeriodControls(container, "results", ctx);
-  ["resultsZoneFilter", "resultsCommunityFilter", "resultsSectionFilter", "resultsStatusFilter", "resultsSearch"].forEach((id) => {
+  ["resultsZoneFilter", "resultsCommunityFilter", "resultsSectionFilter", "resultsSearch"].forEach((id) => {
     const element = container.querySelector(`#${id}`);
     if (!element) return;
     element.onchange = () => applyResultFilters(container, ctx);
-    if (id === "resultsSearch") element.oninput = () => applyResultFilters(container, ctx);
   });
+  const search = container.querySelector("#resultsSearch");
+  search.oninput = debounce(() => applyResultFilters(container, ctx, { keepFocus: true }), 250);
   container.querySelectorAll(".district-edit").forEach((input) => {
     input.onchange = () => ctx.updateDistrictText(input.dataset.id, input.value);
   });
@@ -62,7 +77,7 @@ export function filteredResultRecords(ctx) {
   });
 }
 
-function applyResultFilters(container, ctx) {
+function applyResultFilters(container, ctx, options = {}) {
   state.filters.zone = container.querySelector("#resultsZoneFilter").value;
   state.resultFilters = {
     community: container.querySelector("#resultsCommunityFilter").value,
@@ -73,6 +88,25 @@ function applyResultFilters(container, ctx) {
   state.resultsPagination = { ...(state.resultsPagination || {}), page: 1 };
   saveState();
   ctx.refreshRoute();
+  if (options.keepFocus) restoreSearchFocus(document.getElementById("resultsSearch"));
+}
+
+function restoreSearchFocus(input) {
+  if (!input) return;
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+}
+
+function debounce(callback, wait) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => callback(...args), wait);
+  };
+}
+
+function statusTab(value, label, count, active, tone = "all") {
+  return `<button class="status-tab tone-${tone}${active === value ? " is-active" : ""}" data-status="${value}" role="tab" aria-selected="${active === value}" type="button"><span>${label}</span><strong>${Number(count || 0).toLocaleString()}</strong></button>`;
 }
 
 function normalizedResultsPagination(totalRows) {
@@ -133,10 +167,6 @@ function bindResultsPagination(container, ctx, totalPages) {
   }
 }
 
-function resultMetric(label, value, subtext, icon, background, color) {
-  return `<div class="panel result-metric"><div class="metric-icon" style="background:${background}; color:${color};">${icon}</div><div><p>${label}</p><strong>${Number(value || 0).toLocaleString()}</strong><span>${subtext}</span></div></div>`;
-}
-
 function recordsTable(rows) {
   return `<div class="table-wrap mt-4"><table class="min-w-full text-sm results-table"><thead><tr><th>Date</th><th>Zone</th><th>Community</th><th>District</th><th>Section</th><th>Original Text</th><th>Confidence</th><th>Status</th></tr></thead><tbody>${rows.length ? rows.map((record) => `<tr><td>${record.reportDate || "Unknown"}</td><td>${record.zone || "Unknown"}</td><td>${record.community || ""}</td><td><input class="field district-edit" data-id="${record.id}" value="${escapeAttr(record.district)}" /></td><td><span class="section-pill section-${record.section}">${record.section}</span></td><td class="max-w-md">${escapeHtml(record.rawText)}</td><td>${confidenceCell(record.confidence || 0)}</td><td><span class="status-pill status-${record.status}">${record.status.replace("_", " ")}</span></td></tr>`).join("") : `<tr><td colspan="8" class="text-slate-500">No parsed records yet.</td></tr>`}</tbody></table></div>`;
 }
@@ -145,8 +175,4 @@ function confidenceCell(confidence) {
   const pct = Math.round(confidence * 100);
   const color = pct >= 80 ? "#22c55e" : pct >= 60 ? "#f59e0b" : "#ef4444";
   return `<div class="confidence-cell"><span>${pct}%</span><div class="confidence-track"><div style="width:${pct}%; background:${color};"></div></div></div>`;
-}
-
-function statusGuideItem(label, text, statusClass) {
-  return `<div class="guide-item"><span class="status-pill ${statusClass}">${label}</span><p>${text}</p></div>`;
 }
