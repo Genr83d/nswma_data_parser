@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# electron-builder output
+dist/
+
+# Impeccable session state (local, regenerated each run)
+.impeccable/questions/
+
+# OS and editor clutter
+.DS_Store
+Thumbs.db
