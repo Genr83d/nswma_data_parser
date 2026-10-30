@@ -2,11 +2,11 @@ import { LOCATION_INDEX } from "../../data/locationIndex.js";
 
 const JAMAICA_CENTER = [18.0179, -76.8099];
 const STATUS_COLORS = {
-  completed: "#16a34a",
-  pending: "#f59e0b",
-  missed: "#dc2626",
-  unmapped: "#64748b",
-  missing: "#64748b"
+  completed: "#00843d",
+  pending: "#2b3a8f",
+  missed: "#b8261a",
+  unmapped: "#6b746a",
+  missing: "#6b746a"
 };
 
 export function initializeMap(containerId) {

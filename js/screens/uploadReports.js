@@ -3,6 +3,7 @@ import { escapeAttr, escapeHtml, formatBytes, sampleReport, sortZones } from "..
 import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
 import { organizeReportsByMonth, monthlyReportText, organizeReportsByZone, zoneMonthReportText, zoneMonthFileName } from "../utils/monthlyOrganizer.js";
 import { downloadFile } from "../utils/exporter.js";
+import { icon } from "../utils/ui.js";
 
 let monthlyGroups = [];
 let zoneGroups = [];
@@ -12,46 +13,46 @@ export function renderUploadReports(container, ctx) {
   const uploadedFiles = state.uploadedFiles || [];
   container.innerHTML = `
     <div class="upload-topbar">
-      <div><h2>Upload / Parse Reports</h2><p>Upload WhatsApp .txt files or paste raw report text to extract collection data</p></div>
-      <div class="upload-actions"><button id="parsingGuideButton" class="btn btn-secondary">View Parsing Guide</button><button id="loadSampleButton" class="btn btn-primary purple-button">Sample Reports</button></div>
+      <div><h2>Upload &amp; Parse</h2><p>Bring in the zone supervisors' WhatsApp reports. Everything is read on this computer; nothing is uploaded to a server.</p></div>
+      <div class="upload-actions"><button id="parsingGuideButton" class="btn btn-secondary">${icon("book-open")}Parsing guide</button><button id="loadSampleButton" class="btn btn-secondary">${icon("file-text")}Load sample</button><button id="parseButtonTop" class="btn btn-primary" ${state.rawText ? "" : "disabled"}>${icon("play")}Parse reports</button></div>
     </div>
+    ${collectionPeriodControlsHtml("upload", "Quick preset")}
     <div class="panel upload-filter-panel">
-      <div class="filter-group"><h3>Collection Period</h3><div class="date-range-row">${collectionPeriodControlsHtml("upload", "Quick Preset")}</div><p>Select the month, year, and week range of the reports</p></div>
-      <div class="filter-group"><h3>Zone Filter</h3><select id="zoneFilter" class="field"><option value="all">All Zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.filters.zone === zone.name ? "selected" : ""}>${zone.name}</option>`).join("")}</select><p>Choose a zone or leave as All Zones</p></div>
-      <div class="support-card"><strong>Supported file type: .txt</strong><span>Files are processed locally in your browser.</span><span>No data is sent to any server.</span></div>
+      <div class="filter-group"><h3>Zone Filter</h3><select id="zoneFilter" class="field"><option value="all">All Zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.filters.zone === zone.name ? "selected" : ""}>${zone.name}</option>`).join("")}</select><p>Limit parsing to one zone, or keep All Zones.</p></div>
+      <div class="support-card"><strong>${icon("file-txt")} WhatsApp chat exports (.txt)</strong><span>Export the group chat without media, then drop the file here. Several files can be parsed together.</span></div>
     </div>
     <div class="upload-grid">
       <div class="panel upload-card">
-        <h3>1. Upload WhatsApp .txt File(s)</h3>
+        <h3>Upload chat exports</h3>
         <input id="fileInput" class="sr-file" type="file" accept=".txt,text/plain" multiple />
-        <label id="dropZone" class="drop-zone" for="fileInput"><div class="upload-cloud">↑</div><strong>Drag & drop .txt files here</strong><span>or</span><button id="chooseFilesButton" class="btn btn-primary" type="button">Choose Files</button><small>You can upload multiple .txt files</small></label>
-        <div class="uploaded-heading"><h4>Uploaded Files (${uploadedFiles.length})</h4></div>
-        <div class="uploaded-table"><table><thead><tr><th>File Name</th><th>Size</th><th>Uploaded At</th><th>Status</th></tr></thead><tbody>${uploadedFiles.length ? uploadedFiles.map(uploadedFileRow).join("") : `<tr><td colspan="4"><div class="empty-files"><div>□</div><p>No files uploaded yet</p></div></td></tr>`}</tbody></table></div>
+        <label id="dropZone" class="drop-zone" for="fileInput"><div class="upload-cloud">${icon("tray-arrow-down")}</div><strong>Drop .txt files here</strong><span>or</span><button id="chooseFilesButton" class="btn btn-secondary" type="button">${icon("folder-open")}Choose files</button><small>Several files at once is fine</small></label>
+        <div class="uploaded-heading"><h4>Files loaded (${uploadedFiles.length})</h4></div>
+        <div class="uploaded-table"><table><thead><tr><th>File Name</th><th>Size</th><th>Uploaded At</th><th>Status</th></tr></thead><tbody>${uploadedFiles.length ? uploadedFiles.map(uploadedFileRow).join("") : `<tr><td colspan="4"><div class="empty-files"><div>${icon("file-dashed")}</div><p>No files loaded yet</p></div></td></tr>`}</tbody></table></div>
       </div>
       <div class="panel upload-card">
-        <div class="paste-heading"><h3>2. Or Paste Raw Report Text</h3><button id="clearTextButton" class="btn btn-secondary">Clear Text</button></div>
-        <textarea id="rawText" class="paste-textarea" placeholder="Paste WhatsApp report text here...">${escapeHtml(state.rawText)}</textarea>
+        <div class="paste-heading"><h3>Or paste report text</h3><button id="clearTextButton" class="btn btn-secondary">${icon("eraser")}Clear text</button></div>
+        <textarea id="rawText" class="paste-textarea" placeholder="Paste the WhatsApp report text here">${escapeHtml(state.rawText)}</textarea>
         <p class="char-count">${state.rawText.length.toLocaleString()} characters</p>
-        <div class="tips-card"><strong>Tips for better parsing:</strong><ul><li>Include the zone name in the report, such as Zone 10</li><li>Include dates, such as March 31st 2026</li><li>Keep completed, incomplete, forecast, late, and backlog sections</li></ul></div>
+        <div class="tips-card"><strong>For the cleanest parse</strong><ul><li>Include the zone name in the report, such as Zone 10</li><li>Include dates, such as March 31st 2026</li><li>Keep completed, incomplete, forecast, late, and backlog sections</li></ul></div>
       </div>
     </div>
     <section class="panel monthly-organizer-panel">
       <div class="monthly-organizer-heading">
         <div>
-          <h3>Monthly Report Organizer</h3>
-          <p>Split a large WhatsApp export into smaller month-by-month text files before parsing.</p>
+          <h3>Split a large export</h3>
+          <p>Break a long chat export into one text file per month or per zone before parsing.</p>
         </div>
         <div class="monthly-organizer-actions">
-          <button id="organizeMonthlyButton" class="btn btn-secondary${organizerMode === "month" ? " organizer-active" : ""}">Organize by Month</button>
-          <button id="organizeByZoneButton" class="btn btn-secondary${organizerMode === "zone" ? " organizer-active" : ""}">Organize by Zone</button>
-          <button id="downloadAllOrganizerButton" class="btn btn-primary" ${(organizerMode === "month" ? monthlyGroups : zoneGroups).length ? "" : "disabled"}>Download All Files</button>
+          <button id="organizeMonthlyButton" class="btn btn-secondary${organizerMode === "month" ? " organizer-active" : ""}">${icon("calendar-blank")}By month</button>
+          <button id="organizeByZoneButton" class="btn btn-secondary${organizerMode === "zone" ? " organizer-active" : ""}">${icon("squares-four")}By zone</button>
+          <button id="downloadAllOrganizerButton" class="btn btn-secondary" ${(organizerMode === "month" ? monthlyGroups : zoneGroups).length ? "" : "disabled"}>${icon("download-simple")}Download all</button>
         </div>
       </div>
       <div id="monthlyOrganizerResults" class="monthly-organizer-results">
         ${monthlyOrganizerHtml(monthlyGroups)}
       </div>
     </section>
-    <div class="parse-ready panel"><div class="ready-icon">✦</div><div><h3>Ready to Parse</h3><p>Upload files or paste text, set your filters, then click Parse Reports to extract collection data.</p></div><button id="parseButton" class="btn btn-primary parse-main-button">Parse Reports</button><button id="clearButton" class="btn btn-secondary">Clear Data</button></div>`;
+    <div class="parse-ready panel"><div class="ready-icon">${icon("scan")}</div><div><h3>${state.rawText ? `${state.rawText.length.toLocaleString()} characters ready to parse` : "Load files or paste text to parse"}</h3><p>Parsing reads dates, zones and sections, then matches every district to the master list.</p></div><button id="parseButton" class="btn btn-primary parse-main-button" ${state.rawText ? "" : "disabled"}>${icon("play")}Parse reports</button><button id="clearButton" class="btn btn-danger">${icon("trash")}Clear parsed data</button></div>`;
 
   const fileInput = container.querySelector("#fileInput");
   bindCollectionPeriodControls(container, "upload", ctx);
@@ -70,6 +71,16 @@ export function renderUploadReports(container, ctx) {
     await ctx.loadReportFiles(Array.from(event.dataTransfer.files || []).filter((file) => file.name.toLowerCase().endsWith(".txt")));
   };
 
+  const rawTextInput = container.querySelector("#rawText");
+  rawTextInput.oninput = () => {
+    const length = rawTextInput.value.length;
+    container.querySelector("#parseButton").disabled = !rawTextInput.value.trim();
+    container.querySelector("#parseButtonTop").disabled = !rawTextInput.value.trim();
+    container.querySelector(".char-count").textContent = `${length.toLocaleString()} characters`;
+    container.querySelector(".parse-ready h3").textContent = length ? `${length.toLocaleString()} characters ready to parse` : "Load files or paste text to parse";
+  };
+
+  container.querySelector("#parseButtonTop").onclick = () => container.querySelector("#parseButton").click();
   container.querySelector("#parseButton").onclick = async () => {
     state.rawText = container.querySelector("#rawText").value;
     state.filters.zone = container.querySelector("#zoneFilter").value;
@@ -307,7 +318,7 @@ function openParsingGuideModal() {
           <h2 id="parsingGuideTitle">Parsing Guide</h2>
           <p>Use this format to help the parser identify dates, zones, sections, communities, and districts.</p>
         </div>
-        <button id="closeParsingGuideButton" class="icon-button" aria-label="Close parsing guide">×</button>
+        <button id="closeParsingGuideButton" class="icon-button" aria-label="Close parsing guide">${icon("x")}</button>
       </div>
       <div class="modal-body parsing-guide-body">
         <section>

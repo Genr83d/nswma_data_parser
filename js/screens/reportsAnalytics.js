@@ -2,6 +2,7 @@ import { state } from "../state.js";
 import { escapeHtml, formatDisplayDate, percent, sortZones } from "../utils/normalizer.js";
 import { generateSelectedWeekColumns } from "../utils/weekCalendar.js";
 import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { icon } from "../utils/ui.js";
 
 export function renderReportsAnalytics(container, ctx) {
   const records = ctx.filteredRecords();
@@ -11,14 +12,14 @@ export function renderReportsAnalytics(container, ctx) {
     <div class="analytics-topbar">
       <div>
         <h2>Reports & Analytics</h2>
-        <p>Insights into collection performance across zones, communities, and districts.</p>
+        <p>How each zone and community performed over the selected weeks, compared with the period before.</p>
       </div>
       <div class="analytics-actions">
-        ${collectionPeriodControlsHtml("analytics", "Quick Preset")}
-        <button id="analyticsFilterButton" class="btn btn-secondary">Filters</button>
-        <button id="exportAnalyticsButton" class="btn btn-primary analytics-export-button">Export Analytics</button>
+        <button id="analyticsFilterButton" class="btn btn-secondary">${icon("funnel")}Filters</button>
+        <button id="exportAnalyticsButton" class="btn btn-primary analytics-export-button">${icon("export")}Export</button>
       </div>
     </div>
+    ${collectionPeriodControlsHtml("analytics", "Quick preset")}
 
     <div class="analytics-kpi-grid">
       ${overallRateCard(analytics)}
@@ -57,7 +58,7 @@ export function renderReportsAnalytics(container, ctx) {
         </div>
         <div class="analytics-table-wrap">
           <table class="analytics-mini-table">
-            <thead><tr><th>Community</th><th>Zone</th><th>Completion Rate</th><th>Missed Collections</th></tr></thead>
+            <thead><tr><th>Community</th><th>Zone</th><th>Rate</th><th>Missed</th></tr></thead>
             <tbody>
               ${analytics.problemCommunities.map((item) => `<tr><td>${escapeHtml(item.community)}</td><td>${escapeHtml(item.zone)}</td><td class="${item.rate < 50 ? "danger-text" : "warning-text"}">${item.rate}%</td><td>${item.missed}</td></tr>`).join("") || emptyRow("No problem communities found", 4)}
             </tbody>
@@ -252,34 +253,25 @@ function inWeek(reportDate, week) {
 }
 
 function overallRateCard(analytics) {
-  return `<section class="panel analytics-kpi-card rate-card">
-    <div>
-      <p>Overall Completion Rate</p>
-      <strong>${analytics.completionRate}% <span class="${analytics.rateDelta >= 0 ? "positive-text" : "danger-text"}">${analytics.rateDelta >= 0 ? "↑" : "↓"} ${Math.abs(analytics.rateDelta)}%</span></strong>
+  return `<section class="analytics-kpi-card dash-tally rate-card tone-green">
+    <span class="stamp stamp-green">Completion rate</span>
+      <strong class="tally-value">${analytics.completionRate}% <span class="rate-delta ${analytics.rateDelta >= 0 ? "positive-text" : "danger-text"}">${icon(analytics.rateDelta >= 0 ? "arrow-up" : "arrow-down", "bold")}${Math.abs(analytics.rateDelta)}%</span></strong>
       <small>vs previous collection period</small>
-    </div>
-    <div class="donut small-donut" style="--pct:${analytics.completionRate}; --ring-color:#16a34a;"><span></span></div>
   </section>`;
 }
 
 function kpiCard(label, value, subtext, tone, footer = "") {
-  return `<section class="panel analytics-kpi-card">
-    <div class="analytics-kpi-icon ${tone}">${iconForTone(tone)}</div>
-    <div><p>${label}</p><strong>${value}</strong><small>${subtext}</small>${footer ? `<em>${footer}</em>` : ""}</div>
-  </section>`;
-}
-
-function iconForTone(tone) {
-  return { blue: "▣", purple: "◇", green: "◉", amber: "○" }[tone] || "•";
+  const ink = { blue: "carbon" }[tone] || "ink";
+  return `<section class="analytics-kpi-card dash-tally tone-${ink}"><span class="stamp stamp-${ink}">${label}</span><strong class="tally-value">${value}</strong><small>${subtext}${footer ? `<br>${footer}` : ""}</small></section>`;
 }
 
 function horizontalBar(label, rate) {
-  const color = rate >= 70 ? "#16a34a" : rate >= 45 ? "#f59e0b" : rate > 0 ? "#ef4444" : "#94a3b8";
+  const color = rate >= 70 ? "var(--green)" : rate >= 45 ? "var(--ochre)" : rate > 0 ? "var(--red)" : "var(--ink-4)";
   return `<div class="bar-row"><span>${escapeHtml(label)}</span><div class="bar-track"><div style="width:${rate}%; background:${color}"></div></div><strong>${rate}%</strong></div>`;
 }
 
 function verticalBar(week) {
-  const height = Math.max(10, Math.min(100, week.missed ? week.missed * 6 : 10));
+  const height = week.missed ? Math.max(8, Math.min(100, week.missed * 6)) : 0;
   return `<div class="vertical-bar-item"><div class="vertical-bar-value">${week.missed}</div><div class="vertical-bar-track"><div style="height:${height}%"></div></div><strong>${week.label}</strong><span>${formatDisplayDate(week.start)} - ${formatDisplayDate(week.end)}</span></div>`;
 }
 
@@ -289,7 +281,7 @@ function performanceRow(zone) {
     <td>${escapeHtml(zone.name)}</td>
     <td class="${rateClass}">${zone.rate}%</td>
     <td>${zone.previousRate}%</td>
-    <td class="${zone.change >= 0 ? "positive-text" : "danger-text"}">${zone.change >= 0 ? "↑" : "↓"} ${Math.abs(zone.change)}%</td>
+    <td class="${zone.change >= 0 ? "positive-text" : "danger-text"}">${icon(zone.change >= 0 ? "arrow-up" : "arrow-down", "bold")} ${Math.abs(zone.change)}%</td>
     <td>${zone.completed}</td>
     <td class="warning-text">${zone.pending}</td>
     <td class="danger-text">${zone.missed}</td>
@@ -299,7 +291,7 @@ function performanceRow(zone) {
 }
 
 function sparkline(value) {
-  const color = value >= 70 ? "#16a34a" : value >= 45 ? "#f59e0b" : value > 0 ? "#ef4444" : "#94a3b8";
+  const color = value >= 70 ? "var(--green)" : value >= 45 ? "var(--ochre)" : value > 0 ? "var(--red)" : "var(--ink-4)";
   return `<svg class="sparkline" viewBox="0 0 64 20" aria-label="${value}% trend"><polyline points="0,12 12,14 24,10 36,12 48,8 64,10" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="${value ? 1 : 0.45}" /></svg>`;
 }
 

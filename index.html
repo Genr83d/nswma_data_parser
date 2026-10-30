@@ -3,44 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zone Report Parser</title>
+    <title>WCIS · Waste Collection Intelligence System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        corePlugins: { preflight: true },
+        theme: {
+          extend: {
+            colors: {
+              slate: { 50: "#f1f4ee", 100: "#e4e9e0", 200: "#d3dccd", 300: "#aebba8", 400: "#6b746a", 500: "#566056", 600: "#3b423b", 700: "#2c322c", 800: "#1f241f", 900: "#191c19" },
+              emerald: { 50: "#e1f0e4", 100: "#e1f0e4", 600: "#00843d", 700: "#0a5a2e" },
+              red: { 50: "#f8e0dc", 100: "#f8e0dc", 600: "#b8261a", 700: "#b8261a" },
+              amber: { 50: "#f9ead0", 100: "#fff09e", 600: "#8f5400", 700: "#8f5400" },
+              blue: { 50: "#e4e7f5", 100: "#e4e7f5", 600: "#2b3a8f", 700: "#2b3a8f" }
+            }
+          }
+        }
+      };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="./css/vendor/phosphor/regular.css" />
+    <link rel="stylesheet" href="./css/vendor/phosphor/bold.css" />
     <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./css/book.css" />
   </head>
-  <body class="bg-slate-50 text-slate-900">
+  <body data-ply="white">
     <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand-lockup">
-          <div class="brand-mark">WC</div>
-          <div>
-            <h1>WCIS</h1>
-            <p>Waste Collection Intelligence System</p>
-          </div>
+      <aside class="sidebar" aria-label="WCIS book">
+        <div class="cover-label">
+          <h1>WCIS</h1>
+          <p>Waste Collection Intelligence System</p>
+          <div class="cover-flag" aria-hidden="true"><span></span><span></span><span></span></div>
         </div>
 
-        <nav class="sidebar-nav">
-          <button class="nav-tab active" data-route="dashboard"><span>Dashboard</span></button>
-          <button class="nav-tab" data-route="upload"><span>Upload / Parse Reports</span></button>
-          <button class="nav-tab" data-route="results"><span>Parsed Results</span></button>
-          <button class="nav-tab" data-route="mapping"><span>Mapping Review</span></button>
-          <button class="nav-tab" data-route="weekly"><span>Weekly Collection Sheet</span></button>
-          <button class="nav-tab" data-route="zones"><span>Zone Manager</span></button>
-          <button class="nav-tab" data-route="map"><span>Map View</span></button>
-          <button class="nav-tab" data-route="reports"><span>Reports & Analytics</span></button>
+        <nav class="sidebar-nav" aria-label="Sections">
+          <p class="tab-group-label">Overview</p>
+          <button class="nav-tab active" data-route="dashboard" data-ply="white"><i class="ph ph-book-open-text" aria-hidden="true"></i><span>Dashboard</span><span class="tab-step tab-step-icon" aria-hidden="true">D</span></button>
+
+          <p class="tab-group-label">Report workflow</p>
+          <button class="nav-tab" data-route="upload" data-ply="white"><i class="ph ph-tray-arrow-down" aria-hidden="true"></i><span>Upload &amp; Parse</span><span class="tab-step">1</span></button>
+          <button class="nav-tab" data-route="results" data-ply="white"><i class="ph ph-rows" aria-hidden="true"></i><span>Parsed Results</span><span class="tab-step">2</span></button>
+          <button class="nav-tab" data-route="mapping" data-ply="canary"><i class="ph ph-git-merge" aria-hidden="true"></i><span>Mapping Review</span><span class="tab-step">3</span></button>
+          <button class="nav-tab" data-route="weekly" data-ply="pink"><i class="ph ph-table" aria-hidden="true"></i><span>Weekly Sheet</span><span class="tab-step">4</span></button>
+
+          <p class="tab-group-label">Look up</p>
+          <button class="nav-tab" data-route="map" data-ply="white"><i class="ph ph-map-trifold" aria-hidden="true"></i><span>Map View</span><span class="tab-step tab-step-icon" aria-hidden="true">M</span></button>
+          <button class="nav-tab" data-route="reports" data-ply="pink"><i class="ph ph-chart-bar-horizontal" aria-hidden="true"></i><span>Reports &amp; Analytics</span><span class="tab-step tab-step-icon" aria-hidden="true">R</span></button>
+
+          <p class="tab-group-label">Master list</p>
+          <button class="nav-tab" data-route="zones" data-ply="white"><i class="ph ph-list-numbers" aria-hidden="true"></i><span>Zone Manager</span><span class="tab-step tab-step-icon" aria-hidden="true">Z</span></button>
         </nav>
 
         <div class="sidebar-user">
-          <div class="user-avatar">A</div>
+          <i class="ph ph-hard-drives" aria-hidden="true"></i>
           <div>
-            <p>Admin User</p>
-            <span>Operations</span>
+            <p id="bookStatus">Saved on this computer</p>
+            <span id="bookStatusDetail">Nothing is sent to a server</span>
           </div>
         </div>
       </aside>
 
       <main id="appContent" class="main-content"></main>
+      <div class="ply-edges" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

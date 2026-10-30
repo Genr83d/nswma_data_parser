@@ -1,0 +1,2446 @@
+/* WCIS: the supervisor's duplicate book.
+   White leaf = original record, canary = review copy, pink = file copy.
+   Loaded after styles.css; styles.css keeps layout, this file owns the world. */
+
+@font-face {
+  font-family: "Archivo";
+  src: url("./vendor/fonts/archivo-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: url("./vendor/fonts/courier-prime-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: url("./vendor/fonts/courier-prime-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* plies */
+  --ply-white: #fbfcf8;
+  --ply-canary: #fbf0b4;
+  --ply-pink: #fae0e5;
+  --ply: var(--ply-white);
+  --ply-edge: #dfe5da;
+
+  /* cover */
+  --cover: #0c3b24;
+  --cover-2: #134d30;
+  --cover-ink: #e7efe2;
+  --cover-ink-2: #a9c2ae;
+
+  /* ink */
+  --ink: #191c19;
+  --ink-2: #3b423b;
+  --ink-3: #566056;
+  --ink-4: #6b746a;
+  --leaf: #fdfdfb;
+  --leaf-2: color-mix(in oklab, var(--ply), #0a5a2e 4%);
+  --leaf-3: color-mix(in oklab, var(--ply), #0a5a2e 8%);
+  --rule: color-mix(in oklab, var(--ply), #0a5a2e 17%);
+  --rule-strong: color-mix(in oklab, var(--ply), #0a5a2e 34%);
+
+  /* pre-printed form ink and stamp inks */
+  --green: #00843d;
+  --green-deep: #0a5a2e;
+  --green-wash: #e1f0e4;
+  --carbon: #2b3a8f;
+  --carbon-wash: #e4e7f5;
+  --red: #b8261a;
+  --red-wash: #f8e0dc;
+  --ochre: #8f5400;
+  --ochre-wash: #f9ead0;
+  --gold: #fed100;
+  --gold-wash: #fff09e;
+  --plum: #74306a;
+  --plum-wash: #f1e1ee;
+
+  --r: 2px;
+  --r-stamp: 3px;
+  --cover-w: 252px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-leaf: 0 1px 2px rgba(20, 28, 20, 0.06), 0 10px 28px rgba(20, 28, 20, 0.1);
+  --shadow-slip: 0 2px 4px rgba(20, 28, 20, 0.08), 0 24px 60px rgba(20, 28, 20, 0.22);
+
+  --font: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-typed: "Courier Prime", "Courier New", monospace;
+}
+
+body[data-ply="canary"] {
+  --ply: var(--ply-canary);
+}
+
+body[data-ply="pink"] {
+  --ply: var(--ply-pink);
+}
+
+/* ---------- browser surfaces ---------- */
+
+html,
+body {
+  background: var(--cover);
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--carbon);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-color: var(--rule-strong) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
+  border: 3px solid transparent;
+  border-radius: 10px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+input,
+select,
+textarea,
+button {
+  caret-color: var(--carbon);
+  font-family: inherit;
+}
+
+button:not(:disabled),
+select,
+label[for],
+summary {
+  cursor: pointer;
+}
+
+/* ---------- the book: cover + leaf + ply edges ---------- */
+
+.app-shell {
+  background: var(--cover);
+  grid-template-columns: var(--cover-w) minmax(0, 1fr) 12px;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  background: var(--cover);
+  border-right: 0;
+  gap: 1.25rem;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 1.25rem 0 1rem 1rem;
+  scrollbar-color: var(--cover-2) transparent;
+}
+
+/* stitched spine */
+.sidebar::before {
+  border-left: 1.5px dashed rgba(231, 239, 226, 0.22);
+  bottom: 10px;
+  content: "";
+  left: 8px;
+  position: absolute;
+  top: 10px;
+}
+
+.cover-label {
+  background: var(--leaf);
+  border: 1px solid #c9d3c4;
+  color: var(--ink);
+  margin-right: 1rem;
+  padding: 0.85rem 0.9rem 0.75rem;
+  position: relative;
+}
+
+.cover-label::after {
+  border: 1px solid var(--green);
+  content: "";
+  inset: 4px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.cover-label h1 {
+  color: var(--green-deep);
+  font-size: 2rem;
+  font-stretch: 125%;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+.cover-label p {
+  border-top: 1px solid var(--rule-strong);
+  color: var(--ink-2);
+  font-size: 0.72rem;
+  font-stretch: 80%;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  margin-top: 0.55rem;
+  padding-top: 0.45rem;
+}
+
+.cover-label .cover-flag {
+  display: flex;
+  gap: 0;
+  height: 4px;
+  margin-top: 0.6rem;
+}
+
+.cover-flag span {
+  flex: 1;
+}
+
+.cover-flag span:nth-child(1) {
+  background: var(--green);
+}
+
+.cover-flag span:nth-child(2) {
+  background: var(--gold);
+}
+
+.cover-flag span:nth-child(3) {
+  background: var(--ink);
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.tab-group-label {
+  color: var(--cover-ink-2);
+  font-size: 0.68rem;
+  font-stretch: 75%;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0.85rem 0 0.3rem 0.35rem;
+  text-transform: uppercase;
+}
+
+.tab-group-label:first-child {
+  margin-top: 0;
+}
+
+/* index tabs: paper strips standing proud of the cover; the active one runs into the leaf */
+.nav-tab {
+  --tab: var(--ply-white);
+  align-items: center;
+  background: color-mix(in oklab, var(--tab), var(--cover) 30%);
+  border: 0;
+  border-radius: var(--r) 0 0 var(--r);
+  color: var(--ink);
+  display: grid;
+  font-size: 0.86rem;
+  font-weight: 650;
+  gap: 0.6rem;
+  grid-template-columns: 18px 1fr auto;
+  margin-left: 14px;
+  min-height: 38px;
+  padding: 0.45rem 0.8rem 0.45rem 0.7rem;
+  position: relative;
+  transition:
+    margin-left 260ms var(--ease-out),
+    background-color 160ms ease;
+  width: auto;
+}
+
+.nav-tab[data-ply="canary"] {
+  --tab: var(--ply-canary);
+}
+
+.nav-tab[data-ply="pink"] {
+  --tab: var(--ply-pink);
+}
+
+.nav-tab .ph {
+  color: var(--green-deep);
+  font-size: 1.05rem;
+}
+
+.nav-tab .tab-step {
+  color: var(--ink-3);
+  font-size: 0.72rem;
+  font-stretch: 112%;
+  font-weight: 800;
+}
+
+.nav-tab:hover {
+  background: color-mix(in oklab, var(--tab), var(--cover) 14%);
+  margin-left: 8px;
+}
+
+.nav-tab.active {
+  background: var(--tab);
+  border-color: transparent;
+  color: var(--ink);
+  font-weight: 800;
+  margin-left: 0;
+}
+
+.nav-tab.active::after {
+  background: var(--tab);
+  bottom: 0;
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+}
+
+.nav-tab.active .tab-step {
+  color: var(--green-deep);
+}
+
+.sidebar-user {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(231, 239, 226, 0.14);
+  border-radius: 0;
+  color: var(--cover-ink);
+  gap: 0.6rem;
+  margin-right: 1rem;
+  padding: 0.85rem 0.25rem 0.35rem;
+}
+
+.sidebar-user .ph {
+  color: var(--gold);
+  font-size: 1.15rem;
+}
+
+.sidebar-user p {
+  color: var(--cover-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sidebar-user span {
+  color: var(--cover-ink-2);
+  font-size: 0.72rem;
+}
+
+.main-content {
+  background: var(--ply);
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 1.5rem 2rem 3rem;
+  position: relative;
+  transition: background-color 280ms ease;
+}
+
+/* edges of the copies under the current leaf */
+.ply-edges {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  height: 100dvh;
+  position: sticky;
+  top: 0;
+}
+
+.ply-edges span:nth-child(1) {
+  background: var(--ply-white);
+}
+
+.ply-edges span:nth-child(2) {
+  background: var(--ply-canary);
+}
+
+.ply-edges span:nth-child(3) {
+  background: var(--ply-pink);
+}
+
+body[data-ply="white"] .ply-edges span:nth-child(1),
+body[data-ply="canary"] .ply-edges span:nth-child(2),
+body[data-ply="pink"] .ply-edges span:nth-child(3) {
+  background: var(--ply);
+}
+
+/* leaf turn: the incoming leaf lifts and settles once per route */
+.leaf-enter > * {
+  animation: leaf-settle 420ms var(--ease-out) both;
+}
+
+.leaf-enter > *:nth-child(2) {
+  animation-delay: 30ms;
+}
+
+.leaf-enter > *:nth-child(3) {
+  animation-delay: 60ms;
+}
+
+.leaf-enter > *:nth-child(n + 4) {
+  animation-delay: 90ms;
+}
+
+@keyframes leaf-settle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ---------- leaf header (every screen's topbar is the stub of the form) ---------- */
+
+.dashboard-topbar,
+.upload-topbar,
+.results-topbar,
+.mapping-topbar,
+.weekly-topbar,
+.zone-manager-topbar,
+.map-topbar,
+.analytics-topbar {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0;
+}
+
+.dashboard-topbar h2,
+.upload-topbar h2,
+.results-topbar h2,
+.mapping-topbar h2,
+.weekly-topbar h2,
+.zone-manager-topbar h2,
+.map-topbar h2,
+.analytics-topbar h2 {
+  color: var(--ink);
+  font-size: 1.95rem;
+  font-stretch: 112%;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.dashboard-topbar p,
+.upload-topbar p,
+.results-topbar p,
+.mapping-topbar p,
+.weekly-topbar p,
+.zone-manager-topbar p,
+.map-topbar p,
+.analytics-topbar p {
+  color: var(--ink-3);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin-top: 0.35rem;
+  max-width: 62ch;
+}
+
+.dashboard-title,
+.results-title {
+  align-items: flex-end;
+  display: flex;
+  gap: 0;
+}
+
+.menu-glyph,
+.results-title-icon {
+  display: none;
+}
+
+.dashboard-actions,
+.upload-actions,
+.results-actions,
+.weekly-actions,
+.analytics-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* ---------- period ruler ---------- */
+
+.period-ruler {
+  align-items: stretch;
+  border-bottom: 1.5px solid var(--green);
+  border-top: 1.5px solid var(--green);
+  display: grid;
+  gap: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin: 0 0 1.25rem;
+  position: relative;
+}
+
+.period-ruler::after {
+  /* perforation under the stub */
+  background: radial-gradient(circle, var(--rule-strong) 1.3px, transparent 1.6px) 0 0 / 9px 6px repeat-x;
+  bottom: -14px;
+  content: "";
+  height: 6px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.ruler-month {
+  align-items: center;
+  border-right: 1px solid var(--rule);
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.4rem 0.75rem 0.4rem 0;
+}
+
+.ruler-month .field {
+  background: transparent;
+  border: 0;
+  border-radius: var(--r);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+  min-height: 34px;
+  padding: 0.25rem 1.6rem 0.25rem 0.4rem;
+  width: auto;
+}
+
+.ruler-month .field:hover {
+  background: var(--leaf-2);
+}
+
+.ruler-month #dashboardMode,
+.ruler-month [id$="Mode"] {
+  color: var(--green-deep);
+  font-size: 0.78rem;
+  font-stretch: 85%;
+  font-weight: 700;
+}
+
+.ruler-weeks {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  min-width: 0;
+}
+
+.ruler-week {
+  align-items: flex-start;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--rule);
+  color: var(--ink-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  justify-content: center;
+  min-height: 52px;
+  min-width: 0;
+  padding: 0.35rem 0.7rem;
+  position: relative;
+  text-align: left;
+  transition: background-color 160ms ease;
+}
+
+.ruler-week:first-child {
+  border-left: 0;
+}
+
+/* tick marks along the top edge, seven per week */
+.ruler-week::before {
+  background: repeating-linear-gradient(90deg, var(--green) 0 1px, transparent 1px calc(100% / 7));
+  content: "";
+  height: 5px;
+  left: 0;
+  opacity: 0.55;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.ruler-week b {
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-stretch: 112%;
+  font-weight: 800;
+}
+
+.ruler-week small {
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.ruler-week:hover {
+  background: color-mix(in oklab, var(--ply), var(--gold) 22%);
+}
+
+.ruler-week[aria-pressed="true"] {
+  background: color-mix(in oklab, var(--gold-wash), var(--ply) 18%);
+  color: var(--ink-2);
+}
+
+.ruler-week[aria-pressed="true"] b {
+  color: var(--carbon);
+}
+
+.ruler-week.is-edge::after {
+  background: var(--carbon);
+  bottom: -1.5px;
+  content: "";
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.ruler-tools {
+  align-items: center;
+  border-left: 1px solid var(--rule);
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.4rem 0 0.4rem 0.75rem;
+}
+
+.ruler-tools .field {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  font-size: 0.8rem;
+  font-weight: 650;
+  min-height: 32px;
+  padding: 0.2rem 1.6rem 0.2rem 0.55rem;
+  width: auto;
+}
+
+.ruler-hint {
+  color: var(--ink-3);
+  font-size: 0.7rem;
+  font-stretch: 85%;
+  max-width: 14ch;
+  line-height: 1.2;
+}
+
+.ruler-hidden {
+  display: none;
+}
+
+.modal-body .period-ruler {
+  grid-template-columns: 1fr;
+}
+
+.modal-body .ruler-month,
+.modal-body .ruler-tools {
+  border: 0;
+  padding: 0.4rem 0;
+}
+
+.modal-body .ruler-weeks {
+  border-top: 1px solid var(--rule);
+}
+
+/* ---------- surfaces ---------- */
+
+.panel {
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  box-shadow: none;
+}
+
+.section-heading,
+.zone-panel-heading,
+.analytics-card-header,
+.selected-heading,
+.suggestion-heading,
+.paste-heading,
+.monthly-organizer-heading {
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.6rem;
+}
+
+.section-heading h3,
+.zone-panel-heading h3,
+.analytics-card-header h3,
+.selected-heading h3,
+.upload-card h3,
+.paste-heading h3,
+.monthly-organizer-heading h3,
+.panel > h3,
+.weekly-note-panel h3,
+.legend-panel h3,
+.map-legend-card h3,
+.mapping-panel-heading h3 {
+  color: var(--ink);
+  font-size: 0.98rem;
+  font-stretch: 100%;
+  font-weight: 800;
+  letter-spacing: -0.005em;
+}
+
+.analytics-card-header h3 span {
+  display: none;
+}
+
+/* form captions: pre-printed in green, condensed */
+label > span:first-child,
+.filter-group h3,
+.modal-body label span,
+.weekly-view-options > span,
+.district-editor label span,
+.selected-meta-grid span,
+.result-metric p,
+.metric-card h3,
+.analytics-kpi-card p,
+.weekly-summary-item p,
+.weekly-summary-progress span,
+.map-stat p,
+th,
+.monthly-group-meta dt {
+  color: var(--green-deep);
+  font-size: 0.7rem;
+  font-stretch: 78%;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* ---------- controls ---------- */
+
+.field,
+.paste-textarea,
+.alias-textarea,
+.weekly-cell-input {
+  background: var(--leaf);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r);
+  color: var(--ink);
+  font-size: 0.88rem;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.field:hover {
+  border-color: color-mix(in oklab, var(--rule-strong), var(--green) 40%);
+}
+
+.field:focus,
+.paste-textarea:focus,
+.alias-textarea:focus {
+  border-color: var(--carbon);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--carbon), transparent 82%);
+  outline: none;
+}
+
+.field::placeholder,
+.paste-textarea::placeholder {
+  color: var(--ink-4);
+}
+
+select.field {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--green-deep) 50%), linear-gradient(135deg, var(--green-deep) 50%, transparent 50%);
+  background-position:
+    calc(100% - 13px) 50%,
+    calc(100% - 8px) 50%;
+  background-repeat: no-repeat;
+  background-size:
+    5px 5px,
+    5px 5px;
+  padding-right: 1.8rem;
+}
+
+.ruler-month select.field,
+.ruler-tools select.field {
+  background-color: transparent;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--green);
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  font-size: 0.85rem;
+  font-weight: 750;
+  gap: 0.45rem;
+  letter-spacing: 0;
+  min-height: 36px;
+  padding: 0.4rem 0.85rem;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 90ms ease;
+  white-space: nowrap;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.btn .ph {
+  font-size: 1rem;
+}
+
+.btn-primary,
+.purple-button,
+.analytics-export-button {
+  background: var(--green);
+  border-color: var(--green-deep);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled),
+.purple-button:hover:not(:disabled),
+.analytics-export-button:hover:not(:disabled) {
+  background: var(--green-deep);
+}
+
+.btn-secondary {
+  background: var(--leaf);
+  border-color: var(--rule-strong);
+  color: var(--ink);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--leaf);
+  border-color: var(--green);
+  color: var(--green-deep);
+}
+
+.btn-danger,
+.reject-map {
+  background: transparent;
+  border-color: color-mix(in oklab, var(--red), transparent 55%);
+  color: var(--red);
+}
+
+.btn-danger:hover,
+.reject-map:hover {
+  background: var(--red-wash);
+}
+
+.btn-amber {
+  background: var(--gold);
+  border-color: #c9a400;
+  color: var(--ink);
+}
+
+.btn-amber:hover {
+  background: #f2c600;
+}
+
+.organizer-active {
+  background: var(--gold-wash) !important;
+  border-color: #c9a400 !important;
+  color: var(--ink) !important;
+}
+
+.icon-button,
+.link-button,
+.small-action-button,
+.analytics-link-button {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r);
+  color: var(--ink-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-height: 28px;
+  padding: 0.15rem 0.55rem;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.icon-button:hover,
+.link-button:hover,
+.small-action-button:hover,
+.analytics-link-button:hover {
+  border-color: var(--green);
+  color: var(--green-deep);
+}
+
+.icon-button.selected {
+  background: var(--gold);
+  border-color: #c9a400;
+  color: var(--ink);
+}
+
+.link-button {
+  border-color: transparent;
+  text-decoration: underline;
+}
+
+/* ---------- stamps ---------- */
+
+.status-pill,
+.section-pill,
+.confidence-badge,
+.stamp {
+  align-items: center;
+  background: color-mix(in oklab, currentColor, transparent 92%);
+  border: 1.5px solid currentColor;
+  border-radius: var(--r-stamp);
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--ply), transparent 10%), inset 0 0 0 2.5px color-mix(in oklab, currentColor, transparent 45%);
+  display: inline-flex;
+  font-size: 0.66rem;
+  font-stretch: 85%;
+  font-weight: 800;
+  gap: 0.25rem;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  padding: 0.32rem 0.5rem 0.28rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-matched,
+.section-completed,
+.confidence-high,
+.stamp-green {
+  color: var(--green);
+}
+
+.status-needs_review,
+.confidence-medium,
+.stamp-ochre {
+  color: var(--ochre);
+}
+
+.status-unmapped,
+.section-incomplete,
+.confidence-low,
+.stamp-red {
+  color: var(--red);
+}
+
+.status-ignored,
+.stamp-ink {
+  color: var(--ink-3);
+}
+
+.section-forecast,
+.stamp-carbon {
+  color: var(--carbon);
+}
+
+.section-late {
+  color: var(--ochre);
+}
+
+.section-backlog,
+.stamp-plum {
+  color: var(--plum);
+}
+
+.stamp-press {
+  animation: stamp-press 380ms var(--ease-out) both;
+}
+
+@keyframes stamp-press {
+  from {
+    opacity: 0;
+    transform: scale(1.35) rotate(-4deg);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+.danger-text {
+  color: var(--red) !important;
+}
+
+.warning-text {
+  color: var(--ochre) !important;
+}
+
+.positive-text {
+  color: var(--green) !important;
+}
+
+/* ---------- tallies (replace KPI cards: figures entered in carbon on the form) ---------- */
+
+.metric-grid,
+.results-metrics,
+.zone-metrics-grid,
+.analytics-kpi-grid {
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  display: grid;
+  gap: 0;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  margin-bottom: 1.25rem;
+}
+
+.metric-card,
+.result-metric,
+.analytics-kpi-card,
+.zone-summary-card {
+  align-items: flex-start;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--rule);
+  border-radius: 0;
+  display: flex;
+  gap: 0.65rem;
+  min-height: 0;
+  padding: 0.85rem 1rem 0.9rem;
+}
+
+.metric-card:first-child,
+.result-metric:first-child,
+.analytics-kpi-card:first-child,
+.zone-summary-card:first-child {
+  border-left: 0;
+}
+
+.metric-icon,
+.analytics-kpi-icon {
+  align-items: center;
+  background: transparent !important;
+  border: 0;
+  border-radius: 0;
+  color: var(--tone, var(--green-deep)) !important;
+  display: flex;
+  font-size: 1.15rem;
+  height: auto;
+  justify-content: center;
+  margin-top: 0.05rem;
+  width: auto;
+}
+
+.metric-card strong,
+.result-metric strong,
+.analytics-kpi-card strong,
+.weekly-summary-item strong,
+.map-stat strong,
+.tally-value {
+  color: var(--tone, var(--carbon));
+  display: block;
+  font-size: 1.7rem;
+  font-stretch: 118%;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0.2rem 0 0.15rem;
+}
+
+.metric-card p,
+.result-metric span,
+.analytics-kpi-card small,
+.analytics-kpi-card em {
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.tone-carbon {
+  --tone: var(--carbon);
+}
+
+.tone-green {
+  --tone: var(--green);
+}
+
+.tone-red {
+  --tone: var(--red);
+}
+
+.tone-ochre {
+  --tone: var(--ochre);
+}
+
+.tone-plum {
+  --tone: var(--plum);
+}
+
+.tone-ink {
+  --tone: var(--ink);
+}
+
+/* fill gauges: the former rings and bars read as an ink fill along a ruled line */
+.donut {
+  align-items: flex-end;
+  background: linear-gradient(90deg, var(--ring-color, var(--green)) calc(var(--pct) * 1%), var(--rule) 0) bottom / 100% 6px no-repeat;
+  border-radius: 0;
+  display: flex;
+  height: auto;
+  justify-content: flex-start;
+  margin: 0.4rem 0;
+  padding-bottom: 12px;
+  width: 100%;
+}
+
+.donut::before,
+.donut::after {
+  display: none;
+}
+
+.donut span {
+  background: transparent;
+  color: var(--carbon);
+  font-size: 1.35rem;
+  font-stretch: 118%;
+  font-weight: 800;
+  height: auto;
+  inset: auto;
+  position: static;
+  width: auto;
+}
+
+.bar-track,
+.confidence-track,
+.parse-progress-track,
+.vertical-bar-track {
+  background: var(--rule);
+  border-radius: 0;
+}
+
+.bar-fill,
+.bar-track div,
+.confidence-track div,
+.parse-progress-track div {
+  border-radius: 0;
+}
+
+.parse-progress-track div {
+  background: var(--green);
+}
+
+/* ---------- tables: form ruling ---------- */
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  background: transparent !important;
+  border-bottom: 1.5px solid var(--green) !important;
+  padding: 0.55rem 0.7rem !important;
+  text-align: left;
+  white-space: nowrap;
+}
+
+td {
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+}
+
+tbody tr {
+  transition: background-color 120ms ease;
+}
+
+tbody tr:hover {
+  background: color-mix(in oklab, var(--ply), var(--gold) 18%);
+}
+
+.table-wrap,
+.uploaded-table,
+.analytics-table-wrap {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.source-line,
+.mapping-original,
+.result-tip code,
+.guide-example pre,
+.results-table td.max-w-md {
+  font-family: var(--font-typed);
+  font-size: 0.82rem;
+}
+
+.results-table td.max-w-md,
+.source-line {
+  color: var(--ink-2);
+}
+
+.mapping-original {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.district-edit {
+  background: transparent;
+  border-color: transparent;
+  border-bottom: 1px dashed var(--rule-strong);
+  border-radius: 0;
+  color: var(--carbon);
+  font-weight: 650;
+}
+
+.district-edit:hover {
+  border-bottom-color: var(--green);
+}
+
+.confidence-cell span {
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+/* ---------- typed source text ---------- */
+
+.paste-textarea {
+  background:
+    repeating-linear-gradient(180deg, transparent 0 25px, color-mix(in oklab, var(--carbon), transparent 85%) 25px 26px),
+    var(--leaf);
+  background-attachment: local;
+  color: var(--carbon);
+  font-family: var(--font-typed);
+  font-size: 0.88rem;
+  line-height: 26px;
+  padding: 0.3rem 0.8rem;
+}
+
+.char-count {
+  color: var(--ink-3);
+  font-size: 0.75rem;
+}
+
+/* ---------- notes, tips and slips ---------- */
+
+.tips-card,
+.result-tip,
+.weekly-note-panel,
+.map-note-panel,
+.zone-tips,
+.mapping-tips,
+.support-card {
+  background: transparent;
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--r);
+  color: var(--ink-2);
+}
+
+.tips-card strong,
+.support-card strong {
+  color: var(--ink);
+}
+
+.tips-card li::marker {
+  color: var(--green);
+}
+
+.alert-item,
+.insight-card {
+  align-items: flex-start;
+  background: transparent !important;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  color: var(--ink) !important;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto 1fr;
+  padding: 0.75rem 0;
+}
+
+.alert-item:last-child {
+  border-bottom: 0;
+}
+
+.alert-item p,
+.insight-card strong {
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.alert-item span:not(.stamp),
+.insight-card p {
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.alert-item .stamp {
+  margin-top: 0.1rem;
+  transform: rotate(-2deg);
+}
+
+/* ---------- drop zone ---------- */
+
+.drop-zone {
+  background: var(--leaf);
+  border: 1.5px dashed var(--rule-strong);
+  border-radius: var(--r);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+  background: color-mix(in oklab, var(--leaf), var(--gold) 14%);
+  border-color: var(--green);
+}
+
+.upload-cloud,
+.ready-icon,
+.empty-files div {
+  align-items: center;
+  background: transparent;
+  border: 1.5px solid var(--green);
+  border-radius: var(--r);
+  color: var(--green-deep);
+  display: flex;
+  font-size: 1.4rem;
+  justify-content: center;
+}
+
+.parse-ready {
+  background: var(--leaf);
+  border: 1.5px solid var(--green);
+}
+
+/* ---------- modals as slips laid on the leaf ---------- */
+
+.modal-overlay {
+  backdrop-filter: none;
+  background: rgba(12, 59, 36, 0.42);
+}
+
+.export-modal {
+  --ply: var(--ply-white);
+  animation: slip-in 320ms var(--ease-out) both;
+  background: var(--ply-white);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-slip);
+}
+
+.modal-header {
+  border-bottom: 1.5px solid var(--green);
+}
+
+.modal-header h2 {
+  font-size: 1.3rem;
+  font-stretch: 112%;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.modal-header p {
+  color: var(--ink-3);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--rule);
+}
+
+@keyframes slip-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) rotate(-0.4deg);
+  }
+}
+
+.parse-spinner {
+  border-color: var(--rule);
+  border-top-color: var(--green);
+}
+
+/* ---------- dashboard ---------- */
+
+.dash-tallies {
+  border-bottom: 1.5px solid var(--green);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 1.6rem 0 1.5rem;
+}
+
+.dash-tally {
+  border-left: 1px solid var(--rule);
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem 0.95rem;
+}
+
+.dash-tally:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.dash-tally .stamp {
+  justify-self: start;
+}
+
+.dash-tally .tally-value {
+  font-size: 2.35rem;
+  margin-top: 0.45rem;
+}
+
+.dash-tally small {
+  color: var(--ink-3);
+  font-size: 0.76rem;
+}
+
+.dash-body {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.dash-heading {
+  align-items: baseline;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.dash-heading h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.dash-heading p {
+  color: var(--ink-3);
+  font-size: 0.78rem;
+}
+
+.zone-roster {
+  border-left: 1px solid var(--rule);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+}
+
+.zone-plate {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  color: inherit;
+  display: grid;
+  gap: 0.15rem;
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 150px;
+  padding: 0.75rem 0.85rem 0.8rem;
+  position: relative;
+  text-align: left;
+  transition: background-color 160ms ease;
+}
+
+.zone-plate:hover {
+  background: color-mix(in oklab, var(--ply), var(--gold) 20%);
+}
+
+.zone-plate:hover .plate-mark {
+  color: var(--green);
+}
+
+.plate-kicker {
+  color: var(--green-deep);
+  font-size: 0.68rem;
+  font-stretch: 78%;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.plate-mark {
+  color: var(--ink);
+  font-size: 2.7rem;
+  font-stretch: 125%;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 0.9;
+  transition: color 160ms ease;
+}
+
+.plate-mark small {
+  font-size: 0.9rem;
+  font-stretch: 100%;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-left: 0.2rem;
+}
+
+.plate-mark.is-long {
+  font-size: 1.9rem;
+}
+
+.plate-monitor {
+  color: var(--ink-2);
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.plate-monitor.is-empty {
+  color: var(--ink-4);
+}
+
+.plate-counts {
+  align-items: baseline;
+  color: var(--ink-3);
+  display: flex;
+  font-size: 0.72rem;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.plate-counts b {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.plate-counts .c-done {
+  color: var(--green);
+}
+
+.plate-counts .c-missed {
+  color: var(--red);
+}
+
+.plate-counts .c-pending {
+  color: var(--carbon);
+}
+
+.plate-fill {
+  background: var(--rule);
+  height: 4px;
+  margin-top: 0.45rem;
+  position: relative;
+}
+
+.plate-fill i {
+  background: var(--green);
+  inset: 0 auto 0 0;
+  position: absolute;
+}
+
+.plate-pct {
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-stretch: 112%;
+  font-weight: 800;
+  position: absolute;
+  right: 0.85rem;
+  top: 0.75rem;
+}
+
+.plate-pct.is-none {
+  color: var(--ink-4);
+  font-weight: 600;
+}
+
+.dash-side {
+  display: grid;
+  gap: 1.75rem;
+  align-content: start;
+}
+
+.week-lines {
+  display: grid;
+}
+
+.week-line {
+  align-items: center;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  gap: 0.15rem 0.75rem;
+  grid-template-columns: auto 1fr auto;
+  padding: 0.55rem 0;
+}
+
+.week-line b {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.week-line span {
+  color: var(--ink-3);
+  font-size: 0.74rem;
+}
+
+.week-line strong {
+  color: var(--carbon);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.week-line .plate-fill {
+  grid-column: 1 / -1;
+  margin-top: 0.15rem;
+}
+
+.carbon-log {
+  display: grid;
+}
+
+.carbon-log-item {
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0;
+}
+
+.carbon-log-item p {
+  color: var(--carbon);
+  font-family: var(--font-typed);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.carbon-log-item time {
+  color: var(--ink-3);
+  font-size: 0.7rem;
+}
+
+.carbon-log-empty {
+  color: var(--ink-3);
+  font-size: 0.82rem;
+  padding: 0.5rem 0;
+}
+
+.text-action {
+  background: none;
+  border: 0;
+  color: var(--green-deep);
+  font-size: 0.78rem;
+  font-weight: 750;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.text-action:hover {
+  color: var(--green);
+}
+
+.dash-empty {
+  align-items: center;
+  border: 1.5px dashed var(--green);
+  display: flex;
+  gap: 1.25rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.15rem;
+}
+
+.dash-empty strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.dash-empty p {
+  color: var(--ink-3);
+  font-size: 0.84rem;
+  margin-top: 0.2rem;
+}
+
+/* ---------- weekly sheet cells: entries on the pink copy ---------- */
+
+.weekly-table th,
+.weekly-table td {
+  border-color: var(--rule) !important;
+}
+
+.weekly-table.freeze-columns td:nth-child(-n + 4),
+.weekly-table.freeze-columns th:nth-child(-n + 4) {
+  background: var(--ply) !important;
+}
+
+.weekly-row-zone td {
+  background: color-mix(in oklab, var(--ply), var(--green) 10%) !important;
+  color: var(--green-deep);
+  font-weight: 800;
+}
+
+.weekly-row-community td {
+  background: color-mix(in oklab, var(--ply), var(--green) 4%) !important;
+}
+
+.weekly-cell.completed {
+  background: color-mix(in oklab, var(--green-wash), var(--ply) 25%);
+  color: var(--green-deep);
+}
+
+.weekly-cell.daily {
+  background: color-mix(in oklab, var(--carbon-wash), var(--ply) 25%);
+  color: var(--carbon);
+}
+
+.weekly-cell.partial {
+  background: color-mix(in oklab, var(--ochre-wash), var(--ply) 25%);
+  color: var(--ochre);
+}
+
+.weekly-cell.missed {
+  background: color-mix(in oklab, var(--red-wash), var(--ply) 25%);
+  color: var(--red);
+}
+
+.weekly-cell.nodata {
+  background: transparent;
+  color: var(--ink-4);
+}
+
+.weekly-row-flagged td {
+  background: color-mix(in oklab, var(--ply), var(--gold) 30%) !important;
+}
+
+.weekly-summary-strip,
+.map-stat-strip {
+  background: transparent;
+}
+
+/* ---------- map ---------- */
+
+.leaflet-map {
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r);
+  filter: saturate(0.82) contrast(1.02);
+}
+
+.leaflet-container {
+  font-family: var(--font);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  border-radius: var(--r);
+  box-shadow: var(--shadow-slip);
+}
+
+.map-dot,
+.legend-dot,
+.summary-dot {
+  border-radius: 50%;
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------- narrow windows (min Electron width is 1100) ---------- */
+
+@media (max-width: 1280px) {
+  :root {
+    --cover-w: 216px;
+  }
+
+  .dash-body {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  .ruler-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .ply-edges {
+    display: none;
+  }
+
+  .sidebar {
+    height: auto;
+    padding: 0.75rem 0.75rem 0.5rem;
+    position: static;
+  }
+
+  .sidebar::before,
+  .tab-group-label,
+  .sidebar-user,
+  .cover-label p {
+    display: none;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    border-radius: var(--r) var(--r) 0 0;
+    flex: none;
+    margin: 0;
+  }
+
+  .nav-tab:hover {
+    margin: 0;
+  }
+
+  .main-content {
+    height: auto;
+    padding: 1rem;
+  }
+
+  .period-ruler,
+  .dash-body {
+    grid-template-columns: 1fr;
+  }
+
+  .ruler-weeks {
+    overflow-x: auto;
+  }
+
+  .dash-tallies {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---------- round-one fixes ---------- */
+
+/* tabs: on the cover only a paper edge shows; the open tab is full paper */
+.nav-tab {
+  background: transparent;
+  color: var(--cover-ink);
+  margin-left: 0;
+  padding-right: 1.1rem;
+}
+
+.nav-tab::before {
+  background: var(--tab);
+  bottom: 3px;
+  content: "";
+  opacity: 0.9;
+  position: absolute;
+  right: 0;
+  top: 3px;
+  transform: scaleX(0.55);
+  transform-origin: right center;
+  transition: transform 220ms var(--ease-out);
+  width: 9px;
+}
+
+.nav-tab .ph {
+  color: var(--cover-ink-2);
+}
+
+.nav-tab .tab-step {
+  color: var(--cover-ink-2);
+}
+
+.nav-tab:hover {
+  background: rgba(231, 239, 226, 0.07);
+  margin-left: 0;
+}
+
+.nav-tab:hover::before {
+  transform: scaleX(1);
+}
+
+.nav-tab.active {
+  background: var(--tab);
+  color: var(--ink);
+}
+
+.nav-tab.active::before {
+  display: none;
+}
+
+.nav-tab.active .ph {
+  color: var(--green-deep);
+}
+
+/* selection is a highlighter stroke, never blue */
+.zone-row.active,
+.suggestion-option.active,
+.community-group summary.active {
+  background: color-mix(in oklab, var(--ply), var(--gold) 34%);
+  border-color: color-mix(in oklab, var(--gold), #8f7000 30%);
+}
+
+.zone-row:hover,
+.suggestion-option:hover,
+.community-group summary:hover,
+.district-row:hover,
+.district-row.active {
+  background: color-mix(in oklab, var(--ply), var(--gold) 16%);
+}
+
+.zone-row {
+  background: transparent;
+}
+
+.zone-metrics-grid {
+  max-width: none;
+}
+
+.zone-summary-card {
+  min-height: 0;
+}
+
+.district-editor .field,
+.district-editor textarea,
+.district-editor select {
+  font-weight: 500;
+}
+
+.source-context p,
+.selected-meta-grid .source-context p {
+  background: var(--leaf);
+  border: 1px solid var(--rule);
+  font-family: var(--font-typed);
+}
+
+/* results rows sit on one baseline */
+.results-table td,
+.mapping-table td {
+  padding: 0.4rem 0.7rem;
+  vertical-align: middle;
+}
+
+.district-edit {
+  min-height: 30px;
+  padding: 0.2rem 0.1rem;
+}
+
+.empty-cell {
+  color: var(--ink-3);
+  padding: 1.25rem 0.7rem !important;
+}
+
+/* map: filters on one row, stats as a single tally strip */
+.map-controls-grid {
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-bottom: 1rem;
+}
+
+.map-filter-panel {
+  align-content: center;
+}
+
+.map-stat-strip {
+  align-items: center;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 0.6rem 0.4rem;
+}
+
+.map-stat {
+  justify-items: start;
+  padding: 0.2rem 0.75rem;
+}
+
+.map-stat strong {
+  font-size: 1.45rem;
+  margin: 0;
+}
+
+.map-stat p {
+  white-space: nowrap;
+}
+
+.map-stat .map-dot {
+  display: none;
+}
+
+.small-action-button,
+.analytics-link-button {
+  white-space: nowrap;
+}
+
+.analytics-card-header {
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* zones without reports in the selected weeks stay quiet so active ones read first */
+.zone-plate.is-quiet .plate-mark {
+  color: color-mix(in oklab, var(--ink-3), var(--ply) 25%);
+}
+
+.zone-plate.is-quiet .plate-counts {
+  color: var(--ink-4);
+}
+
+/* ---------- round-two fixes ---------- */
+
+.map-stat p {
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.map-dot.pending {
+  background: var(--carbon);
+}
+
+@media (max-width: 1360px) {
+  .period-ruler {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .ruler-weeks {
+    border-top: 1px solid var(--rule);
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .ruler-month {
+    border-right: 0;
+  }
+}
+
+/* ---------- finish-review fixes ---------- */
+
+/* stamps keep their ink wherever they sit */
+.stamp.stamp-green { color: var(--green) !important; }
+.stamp.stamp-red { color: var(--red) !important; }
+.stamp.stamp-carbon { color: var(--carbon) !important; }
+.stamp.stamp-ochre { color: var(--ochre) !important; }
+.stamp.stamp-plum { color: var(--plum) !important; }
+.stamp.stamp-ink { color: var(--ink-3) !important; }
+
+/* every count on every leaf is a stamped tally, never an icon card */
+.results-metrics .dash-tally,
+.zone-metrics-grid .dash-tally,
+.analytics-kpi-grid .dash-tally,
+.weekly-summary-strip .dash-tally,
+.map-stat-strip .dash-tally {
+  align-content: start;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--rule);
+  border-radius: 0;
+  display: grid;
+  gap: 0.15rem;
+  justify-items: start;
+  min-height: 0;
+  padding: 0.8rem 1rem 0.85rem;
+}
+
+.results-metrics .dash-tally:first-child,
+.zone-metrics-grid .dash-tally:first-child,
+.analytics-kpi-grid .dash-tally:first-child,
+.weekly-summary-strip .dash-tally:first-child,
+.map-stat-strip .dash-tally:first-child {
+  border-left: 0;
+}
+
+.results-metrics .tally-value,
+.zone-metrics-grid .tally-value,
+.analytics-kpi-grid .tally-value,
+.weekly-summary-strip .tally-value,
+.map-stat-strip .tally-value {
+  font-size: 1.8rem;
+  margin-top: 0.4rem;
+}
+
+.dash-tally small {
+  color: var(--ink-3);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.weekly-summary-strip,
+.map-stat-strip {
+  border: 1px solid var(--rule);
+  gap: 0;
+  padding: 0;
+}
+
+.weekly-summary-progress {
+  border-left: 1px solid var(--rule);
+  padding: 0.8rem 1rem;
+}
+
+.rate-delta {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-stretch: 100%;
+  gap: 0.1rem;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+/* stepped index tabs: each tab's paper strip stands proud of the cover with its step printed on it */
+.nav-tab {
+  grid-template-columns: 18px 1fr;
+  min-height: 40px;
+  padding-right: 2.6rem;
+}
+
+.nav-tab::before {
+  border-radius: var(--r) 0 0 var(--r);
+  bottom: 4px;
+  opacity: 1;
+  top: 4px;
+  transform: translateX(6px);
+  transition: transform 240ms var(--ease-out);
+  width: 30px;
+}
+
+.nav-tab:hover::before {
+  transform: translateX(0);
+}
+
+/* the rail steps: each group's strips sit one notch further down the fore edge */
+.sidebar-nav .nav-tab:nth-of-type(n)::before {
+  box-shadow: inset 0 -1px 0 rgba(12, 59, 36, 0.18);
+}
+
+.nav-tab .tab-step {
+  color: var(--green-deep);
+  font-size: 0.78rem;
+  position: absolute;
+  right: 9px;
+  text-align: center;
+  transform: translateX(6px);
+  transition: transform 240ms var(--ease-out);
+  width: 18px;
+  z-index: 1;
+}
+
+.nav-tab:hover .tab-step {
+  transform: translateX(0);
+}
+
+.nav-tab.active .tab-step {
+  transform: none;
+}
+
+/* weekly sheet: entries written in ink on ruled cells */
+.weekly-table {
+  min-width: 100%;
+  width: max-content;
+}
+
+.weekly-table th:nth-child(2),
+.weekly-table td:nth-child(2) {
+  max-width: 120px;
+  min-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 120px;
+}
+
+.weekly-table th:nth-child(3),
+.weekly-table td:nth-child(3) {
+  max-width: 150px;
+  min-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 150px;
+}
+
+.weekly-table.freeze-columns th:nth-child(3),
+.weekly-table.freeze-columns td:nth-child(3) {
+  left: 164px;
+}
+
+.weekly-table.freeze-columns th:nth-child(4),
+.weekly-table.freeze-columns td:nth-child(4) {
+  left: 314px;
+}
+
+.weekly-table th,
+.weekly-table td {
+  padding: 0.45rem 0.65rem;
+}
+
+.weekly-zone-toggle,
+.weekly-community-toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+
+.weekly-zone-toggle strong,
+.weekly-community-toggle strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weekly-table .week-header {
+  background: var(--ply) !important;
+  color: var(--green-deep);
+}
+
+.weekly-table td .weekly-cell,
+.weekly-table td .weekly-cell-input {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dotted color-mix(in oklab, currentColor, transparent 45%);
+  border-radius: 0;
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  min-width: 96px;
+  padding: 0.25rem 0.4rem;
+  width: 120px;
+}
+
+.weekly-table td .weekly-cell.completed { color: var(--green-deep); }
+.weekly-table td .weekly-cell.daily { color: var(--carbon); }
+.weekly-table td .weekly-cell.partial { color: var(--ochre); }
+.weekly-table td .weekly-cell.missed { color: var(--red); }
+.weekly-table td .weekly-cell.nodata { color: var(--ink-4); }
+
+.weekly-table td .weekly-cell-input:hover,
+.weekly-table td .weekly-cell-input:focus {
+  background: var(--leaf);
+  box-shadow: 0 0 0 1px var(--rule-strong), 0 6px 18px rgba(20, 28, 20, 0.12);
+}
+
+/* legend swatches keep their wash so the key reads */
+.weekly-legend-panel .weekly-cell {
+  border-radius: var(--r);
+}
+
+/* plate: parish name joins the monitor block */
+.plate-monitor b {
+  color: var(--green-deep);
+  font-weight: 750;
+}
+
+.plate-mark {
+  margin-top: 0.1rem;
+}
+
+/* clipping */
+.analytics-mini-table th,
+.analytics-mini-table td {
+  white-space: nowrap;
+}
+
+.map-filter-panel {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ruler-hint {
+  color: var(--ink-2);
+  font-size: 0.76rem;
+}
+
+/* working widths between the 1100 minimum window and wide desktops */
+@media (max-width: 1360px) {
+  .weekly-filter-panel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .map-controls-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-kpi-grid {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .analytics-kpi-grid .dash-tally:nth-child(4) {
+    border-left: 0;
+  }
+
+  .analytics-kpi-grid .dash-tally:nth-child(n + 4) {
+    border-top: 1px solid var(--rule);
+  }
+}
+
+@media (max-width: 1360px) {
+  .zone-manager-grid {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  }
+
+  .zone-manager-grid .district-edit-panel {
+    grid-column: 1 / -1;
+  }
+
+  .analytics-chart-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-chart-grid .analytics-zone-chart {
+    grid-row: span 2;
+  }
+
+  .mapping-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+  }
+}
+
+.weekly-table th:nth-child(4),
+.weekly-table td:nth-child(4) {
+  max-width: 230px;
+  min-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1360px) {
+  .weekly-summary-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .weekly-summary-strip > :nth-child(n + 5) {
+    border-top: 1px solid var(--rule);
+  }
+
+  .weekly-summary-strip > :nth-child(5) {
+    border-left: 0;
+  }
+}
+
+/* ---------- verdict-pass fixes ---------- */
+
+.dash-tally .stamp {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* letter tabs on the non-workflow sections, like an indexed ledger */
+.nav-tab .tab-step-icon {
+  font-stretch: 100%;
+  font-weight: 800;
+}
+
+/* group labels run across the empty cells beside them */
+.weekly-row-zone td:nth-child(2),
+.weekly-row-community td:nth-child(3) {
+  max-width: none;
+  overflow: visible;
+  z-index: 4 !important;
+}
+
+.weekly-row-zone td:nth-child(2) .weekly-zone-toggle,
+.weekly-row-community td:nth-child(3) .weekly-community-toggle {
+  max-width: none;
+  white-space: nowrap;
+}
+
+.weekly-row-zone td:nth-child(2) strong,
+.weekly-row-community td:nth-child(3) strong {
+  overflow: visible;
+}
+
+.district-child-cell {
+  display: block;
+  max-width: 205px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-mini-table th {
+  white-space: normal;
+}
+
+/* results scroll sideways before the district column is crushed */
+.results-table-panel .table-wrap,
+.mapping-list-panel .table-wrap {
+  overflow-x: auto;
+}
+
+.results-table {
+  min-width: 1000px;
+}
+
+.results-table td:nth-child(4) {
+  min-width: 190px;
+}
+
+@media (max-width: 1360px) {
+  .weekly-summary-strip {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .weekly-summary-strip > :nth-child(n + 5) {
+    border-top: 0;
+  }
+
+  .weekly-summary-strip > :nth-child(5) {
+    border-left: 1px solid var(--rule);
+  }
+
+  .weekly-summary-strip .dash-tally,
+  .weekly-summary-progress {
+    padding: 0.6rem 0.6rem 0.65rem;
+  }
+
+  .weekly-summary-strip .tally-value,
+  .weekly-summary-progress strong {
+    font-size: 1.3rem;
+  }
+
+  .weekly-filter-panel {
+    padding: 0.85rem 1rem;
+  }
+
+  .mapping-filter-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .mapping-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analytics-mini-table th,
+.analytics-mini-table td {
+  padding-left: 0.45rem !important;
+  padding-right: 0.45rem !important;
+}
+
+.analytics-table-wrap {
+  overflow-x: auto;
+}

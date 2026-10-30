@@ -18,7 +18,7 @@ export function openExportModal(options = {}) {
           <h2>Export Data</h2>
           <p>Select the data, date range, and format for export.</p>
         </div>
-        <button id="closeExportModalButton" class="icon-button">×</button>
+        <button id="closeExportModalButton" class="icon-button" aria-label="Close export"><i class="ph ph-x" aria-hidden="true"></i></button>
       </div>
       <div class="modal-body">
         <label>

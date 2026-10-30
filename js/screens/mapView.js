@@ -3,6 +3,7 @@ import { escapeAttr, escapeHtml, formatDisplayDate, sortZones } from "../utils/n
 import { buildGeocodeQuery, searchNominatim } from "../utils/geocoder.js";
 import { initializeMap, getDistrictLocation, renderDistrictMarker, renderDistrictPolygon, applyStatusColor, showMissingLocationList } from "../utils/mapUtils.js";
 import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { icon } from "../utils/ui.js";
 
 export function renderMapView(container, ctx) {
   state.mapView ||= {};
@@ -21,17 +22,17 @@ export function renderMapView(container, ctx) {
     <div class="map-topbar">
       <div>
         <h2>Map View</h2>
-        <p>Real Jamaica map using OpenStreetMap. Districts without verified or estimated coordinates stay off-map.</p>
+        <p>Districts on the OpenStreetMap of Jamaica, coloured by status. Districts without coordinates are listed below the map until located.</p>
       </div>
       <div class="results-actions">
-        <button id="refreshMapButton" class="btn btn-secondary">Refresh Map</button>
-        <button id="mapFiltersButton" class="btn btn-secondary">Filters</button>
+        <button id="refreshMapButton" class="btn btn-secondary">${icon("arrow-clockwise")}Refresh map</button>
+        <button id="mapFiltersButton" class="btn btn-secondary">${icon("funnel")}Filters</button>
       </div>
     </div>
+    ${collectionPeriodControlsHtml("map", "Week range")}
 
     <div class="map-controls-grid">
       <section class="panel map-filter-panel">
-        ${collectionPeriodControlsHtml("map", "Week Range")}
         <label><span>Parish</span><select id="mapParishFilter" class="field"><option value="all">All Parishes</option>${parishes.map((parish) => `<option value="${escapeAttr(parish)}" ${state.mapView.parish === parish ? "selected" : ""}>${escapeHtml(parish)}</option>`).join("")}</select></label>
         <label><span>Zone</span><select id="mapZoneFilter" class="field"><option value="all">All Zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.mapView.zone === zone.name ? "selected" : ""}>${escapeHtml(zone.name)}</option>`).join("")}</select></label>
         <label><span>Community</span><select id="mapCommunityFilter" class="field"><option value="all">All Communities</option>${communities.map((community) => `<option value="${escapeAttr(community)}" ${state.mapView.community === community ? "selected" : ""}>${escapeHtml(community)}</option>`).join("")}</select></label>
@@ -39,7 +40,7 @@ export function renderMapView(container, ctx) {
       </section>
       <section class="panel map-stat-strip">
         ${mapStat("Mapped", mappedDistricts.length, "completed")}
-        ${mapStat("Missing Location", missingDistricts.length, "unmapped")}
+        ${mapStat("No location", missingDistricts.length, "unmapped")}
         ${mapStat("Completed", stats.completed, "completed")}
         ${mapStat("Pending", stats.pending, "pending")}
         ${mapStat("Missed", stats.missed, "missed")}
@@ -195,7 +196,8 @@ function renderLeafletMap(districts) {
 }
 
 function mapStat(label, value, status) {
-  return `<div class="map-stat"><span class="map-dot ${status}"></span><p>${label}</p><strong>${Number(value || 0).toLocaleString()}</strong></div>`;
+  const tone = { completed: "green", pending: "carbon", missed: "red" }[status] || "ink";
+  return `<div class="map-stat dash-tally tone-${tone}"><span class="stamp stamp-${tone}">${label}</span><strong class="tally-value">${Number(value || 0).toLocaleString()}</strong></div>`;
 }
 
 function legendItem(label, status) {
