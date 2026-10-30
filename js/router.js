@@ -18,7 +18,19 @@ const routes = {
   reports: renderReportsAnalytics
 };
 
+const routePlies = {
+  dashboard: "white",
+  upload: "white",
+  results: "white",
+  mapping: "canary",
+  weekly: "pink",
+  zones: "white",
+  map: "white",
+  reports: "pink"
+};
+
 let currentRoute = "dashboard";
+let renderedRoute = "";
 let appContext = null;
 
 export function initRouter(context) {
@@ -44,7 +56,17 @@ export function navigate(route, options = {}) {
     button.classList.toggle("active", button.dataset.route === route);
   });
   const container = document.getElementById("appContent");
+  const turningLeaf = renderedRoute !== route;
+  document.body.dataset.ply = routePlies[route] || "white";
+  container.classList.remove("leaf-enter");
   routes[route](container, appContext);
+  if (turningLeaf) {
+    void container.offsetWidth;
+    container.classList.add("leaf-enter");
+    container.scrollTop = 0;
+  }
+  renderedRoute = route;
+  appContext?.afterRender?.(route);
 }
 
 export function refreshRoute() {

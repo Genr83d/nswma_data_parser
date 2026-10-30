@@ -2,6 +2,7 @@ import { state, saveState, addActivity } from "../state.js";
 import { escapeAttr, escapeHtml, normalizeZoneName, sortZones } from "../utils/normalizer.js";
 import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
 import { getCollectionPeriodDateRange } from "../utils/weekCalendar.js";
+import { icon } from "../utils/ui.js";
 
 export function renderWeeklyCollectionSheet(container, ctx) {
   state.weeklySheet ||= {};
@@ -19,17 +20,17 @@ export function renderWeeklyCollectionSheet(container, ctx) {
     <div class="weekly-topbar">
       <div>
         <h2>Weekly Collection Sheet</h2>
-        <p>Generate and manage weekly collection data by zone, community, and district.</p>
+        <p>The file copy: one row per district, one column per week. Edit any cell; changes save on this computer.</p>
       </div>
       <div class="weekly-actions">
-        ${collectionPeriodControlsHtml("weekly", "Quick Preset")}
-        <button id="importWeeklyButton" class="btn btn-secondary">Import Data</button>
-        <button id="exportWeeklyButton" class="btn btn-secondary">Export Excel</button>
-        <button id="exportWeeklyPdfButton" class="btn btn-secondary">Export PDF</button>
-        <button id="reviewFlaggedButton" class="btn ${flaggedCount > 0 ? 'btn-amber' : 'btn-secondary'}">Review Flagged${flaggedCount > 0 ? ` (${flaggedCount})` : ''}</button>
-        <button id="saveWeeklyButton" class="btn btn-primary">Save Sheet</button>
+        <button id="importWeeklyButton" class="btn btn-secondary">${icon("upload-simple")}Import</button>
+        <button id="exportWeeklyButton" class="btn btn-secondary">${icon("microsoft-excel-logo")}Excel</button>
+        <button id="exportWeeklyPdfButton" class="btn btn-secondary">${icon("file-pdf")}PDF</button>
+        <button id="reviewFlaggedButton" class="btn ${flaggedCount > 0 ? 'btn-amber' : 'btn-secondary'}">${icon("flag")}Flagged${flaggedCount > 0 ? ` (${flaggedCount})` : ''}</button>
+        <button id="saveWeeklyButton" class="btn btn-primary">${icon("floppy-disk")}Save sheet</button>
       </div>
     </div>
+    ${collectionPeriodControlsHtml("weekly", "Quick preset")}
 
     <section class="panel weekly-filter-panel">
       <label><span>Zone</span><select id="weeklyZoneFilter" class="field"><option value="all">All Zones</option>${sortZones(state.zones).map((zone) => `<option value="${zone.name}" ${state.weeklySheet.zone === zone.name ? "selected" : ""}>${escapeHtml(zone.name)}</option>`).join("")}</select></label>
@@ -45,13 +46,13 @@ export function renderWeeklyCollectionSheet(container, ctx) {
     </section>
 
     <section class="panel weekly-summary-strip">
-      ${summaryItem("Zones", state.zones.length, "Z", "#dbeafe", "#2563eb")}
-      ${summaryItem("Communities", stats.communities, "C", "#dcfce7", "#16a34a")}
-      ${summaryItem("Districts", stats.districts, "D", "#ede9fe", "#7c3aed")}
-      <div class="weekly-summary-progress"><span>Completion (All Weeks)</span><strong>${stats.completionRate}%</strong><div class="confidence-track"><div style="width:${stats.completionRate}%; background:#22c55e"></div></div></div>
-      ${summaryItem("Completed", stats.completed, "", "#ecfdf5", "#047857")}
-      ${summaryItem("Pending", stats.pending, "", "#fef3c7", "#f59e0b")}
-      ${summaryItem("Missed", stats.missed, "", "#fee2e2", "#ef4444")}
+      ${summaryItem("Zones", state.zones.length, "squares-four", "ink")}
+      ${summaryItem("Communities", stats.communities, "house-line", "ink")}
+      ${summaryItem("Districts", stats.districts, "map-pin-area", "ink")}
+      <div class="weekly-summary-progress"><span>Completion (All Weeks)</span><strong>${stats.completionRate}%</strong><div class="confidence-track"><div style="width:${stats.completionRate}%; background:var(--green)"></div></div></div>
+      ${summaryItem("Completed", stats.completed, "check-circle", "green")}
+      ${summaryItem("Pending", stats.pending, "clock", "carbon")}
+      ${summaryItem("Missed", stats.missed, "x-circle", "red")}
     </section>
     ${weeklyDiagnosticsHtml()}
 
@@ -69,7 +70,7 @@ export function renderWeeklyCollectionSheet(container, ctx) {
             </tr>
           </thead>
           <tbody>
-            ${visibleRows.length ? visibleRows.map((row) => weeklyRowHtml(row, weekly.weeks)).join("") : `<tr><td colspan="${weekly.weeks.length + 5}" class="text-slate-500">No weekly collection rows match the current filters.</td></tr>`}
+            ${visibleRows.length ? visibleRows.map((row) => weeklyRowHtml(row, weekly.weeks)).join("") : `<tr><td colspan="${weekly.weeks.length + 5}" class="empty-cell">No rows match these filters. Clear the search or pick All Zones.</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -251,8 +252,8 @@ function weeklyDiagnosticsHtml() {
   </section>`;
 }
 
-function summaryItem(label, value, icon, background, color) {
-  return `<div class="weekly-summary-item"><span class="metric-icon" style="background:${background}; color:${color};">${icon}</span><div><p>${label}</p><strong>${Number(value || 0).toLocaleString()}</strong></div></div>`;
+function summaryItem(label, value, iconName, tone) {
+  return `<div class="weekly-summary-item dash-tally tone-${tone}"><span class="stamp stamp-${tone}">${label}</span><strong class="tally-value">${Number(value || 0).toLocaleString()}</strong></div>`;
 }
 
 function weeklyRowHtml(row, weeks) {
@@ -263,9 +264,9 @@ function weeklyRowHtml(row, weeks) {
   const flagCell = row.type === "district"
     ? `<td class="weekly-flag-col"><input type="checkbox" class="weekly-flag-checkbox" data-row-key="${escapeAttr(rowKey)}" ${isFlagged ? "checked" : ""} title="Flag for review" /></td>`
     : `<td class="weekly-flag-col"></td>`;
-  const zoneCell = row.type === "zone" ? `<button class="weekly-zone-toggle" type="button" data-zone="${escapeAttr(row.zone)}" aria-expanded="${!isZoneCollapsed}"><span>${isZoneCollapsed ? "›" : "⌄"}</span><strong>${escapeHtml(row.zone)}</strong></button>` : "";
-  const communityCell = row.type === "community" ? `<button class="weekly-community-toggle" type="button" data-zone="${escapeAttr(row.zone)}" data-community="${escapeAttr(row.community)}" aria-expanded="${!isCommunityCollapsed}"><span>${isCommunityCollapsed ? "›" : "⌄"}</span><strong>${escapeHtml(row.community)}</strong></button>` : "";
-  const districtCell = row.type === "district" ? `<span class="district-child-cell">${escapeHtml(row.district)}</span>` : "";
+  const zoneCell = row.type === "zone" ? `<button class="weekly-zone-toggle" type="button" data-zone="${escapeAttr(row.zone)}" aria-expanded="${!isZoneCollapsed}">${icon(isZoneCollapsed ? "caret-right" : "caret-down")}<strong>${escapeHtml(row.zone)}</strong></button>` : "";
+  const communityCell = row.type === "community" ? `<button class="weekly-community-toggle" type="button" data-zone="${escapeAttr(row.zone)}" data-community="${escapeAttr(row.community)}" aria-expanded="${!isCommunityCollapsed}">${icon(isCommunityCollapsed ? "caret-right" : "caret-down")}<strong>${escapeHtml(row.community)}</strong></button>` : "";
+  const districtCell = row.type === "district" ? `<span class="district-child-cell" title="${escapeAttr(row.district)}">${escapeHtml(row.district)}</span>` : "";
   return `<tr class="weekly-row-${row.type}${isFlagged ? " weekly-row-flagged" : ""}">
     ${flagCell}
     <td>${zoneCell}</td>
@@ -522,7 +523,7 @@ function weeklyPdfMeta(weeks) {
 function weeklyPdfRowHtml(row, weeks) {
   const zoneCell = row.type === "zone" ? `<strong>${escapeHtml(row.zone)}</strong>` : "";
   const communityCell = row.type === "community" ? `<span class="community-header-cell">${escapeHtml(row.community)}</span>` : "";
-  const districtCell = row.type === "district" ? `<span class="district-child-cell">${escapeHtml(row.district)}</span>` : "";
+  const districtCell = row.type === "district" ? `<span class="district-child-cell" title="${escapeAttr(row.district)}">${escapeHtml(row.district)}</span>` : "";
   return `<tr class="weekly-row-${row.type}">
     <td>${zoneCell}</td>
     <td>${communityCell}</td>

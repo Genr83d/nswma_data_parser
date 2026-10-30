@@ -214,8 +214,19 @@ function uniqueId(base, siblings) {
   return id;
 }
 
+function updateCoverStatus() {
+  const status = document.getElementById("bookStatus");
+  const detail = document.getElementById("bookStatusDetail");
+  if (!status || !detail) return;
+  const records = state.records.length;
+  const open = state.records.filter((record) => record.status !== "matched" && record.status !== "ignored").length;
+  status.textContent = records ? `${records.toLocaleString()} records on this computer` : "Saved on this computer";
+  detail.textContent = records ? (open ? `${open.toLocaleString()} still need mapping` : "All records mapped") : "Nothing is sent to a server";
+}
+
 const context = {
   state,
+  afterRender: updateCoverStatus,
   saveState,
   addActivity,
   resetParsedData,

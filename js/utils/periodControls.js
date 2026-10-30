@@ -24,21 +24,49 @@ function weekOptions(period, selectedWeek) {
 
 export function collectionPeriodControlsHtml(prefix, label = "Collection Period") {
   const period = normalizeCollectionPeriod(state.collectionPeriod);
+  const weeks = generateYearWeeks(period.year, period.month, period.mode);
   return `
-    <label><span>${label}</span><select id="${prefix}Preset" class="field">
-      <option value="current-week" ${period.preset === "current-week" ? "selected" : ""}>Current Week</option>
-      <option value="last-4-weeks" ${period.preset === "last-4-weeks" ? "selected" : ""}>Last 4 Weeks</option>
-      <option value="full-month" ${period.preset === "full-month" ? "selected" : ""}>Full Month</option>
-      <option value="custom" ${period.preset === "custom" ? "selected" : ""}>Custom Range</option>
-    </select></label>
-    <label><span>Month Type</span><select id="${prefix}Mode" class="field">
-      <option value="collection" ${period.mode === "collection" ? "selected" : ""}>Collection Month (25-24)</option>
-      <option value="calendar" ${period.mode === "calendar" ? "selected" : ""}>Calendar Month</option>
-    </select></label>
-    <label><span>Year</span><select id="${prefix}Year" class="field">${yearOptions(period.year).map((year) => `<option value="${year}" ${year === period.year ? "selected" : ""}>${year}</option>`).join("")}</select></label>
-    <label><span>Month</span><select id="${prefix}Month" class="field">${monthOptions(period.month)}</select></label>
-    <label><span>Start Week</span><select id="${prefix}StartWeek" class="field">${weekOptions(period, period.startWeek)}</select></label>
-    <label><span>End Week</span><select id="${prefix}EndWeek" class="field">${weekOptions(period, period.endWeek)}</select></label>`;
+    <div class="period-ruler" data-period-prefix="${prefix}">
+      <div class="ruler-month">
+        <select id="${prefix}Mode" class="field" aria-label="Month type">
+          <option value="collection" ${period.mode === "collection" ? "selected" : ""}>Collection month (25-24)</option>
+          <option value="calendar" ${period.mode === "calendar" ? "selected" : ""}>Calendar month</option>
+        </select>
+        <select id="${prefix}Month" class="field" aria-label="Month">${monthOptions(period.month)}</select>
+        <select id="${prefix}Year" class="field" aria-label="Year">${yearOptions(period.year).map((year) => `<option value="${year}" ${year === period.year ? "selected" : ""}>${year}</option>`).join("")}</select>
+      </div>
+      <div class="ruler-weeks" role="group" aria-label="Weeks in period. Click a week, shift-click to extend the range.">
+        ${weeks.map((week) => rulerWeekHtml(prefix, week, period)).join("")}
+      </div>
+      <div class="ruler-tools">
+        <select id="${prefix}Preset" class="field" aria-label="${escapeAttr(label)}">
+          <option value="current-week" ${period.preset === "current-week" ? "selected" : ""}>Current week</option>
+          <option value="last-4-weeks" ${period.preset === "last-4-weeks" ? "selected" : ""}>Last 4 weeks</option>
+          <option value="full-month" ${period.preset === "full-month" ? "selected" : ""}>Full month</option>
+          <option value="custom" ${period.preset === "custom" ? "selected" : ""}>Custom range</option>
+        </select>
+        <span class="ruler-hint">Shift-click a week to extend</span>
+      </div>
+      <div class="ruler-hidden">
+        <select id="${prefix}StartWeek" aria-label="Start week" tabindex="-1">${weekOptions(period, period.startWeek)}</select>
+        <select id="${prefix}EndWeek" aria-label="End week" tabindex="-1">${weekOptions(period, period.endWeek)}</select>
+      </div>
+    </div>`;
+}
+
+function rulerWeekHtml(prefix, week, period) {
+  const inRange = week.weekNumber >= period.startWeek && week.weekNumber <= period.endWeek;
+  const isEdge = inRange && (week.weekNumber === period.startWeek || week.weekNumber === period.endWeek);
+  return `<button type="button" class="ruler-week${isEdge ? " is-edge" : ""}" data-ruler-week="${week.weekNumber}" data-ruler-prefix="${prefix}" aria-pressed="${inRange}"><b>Week ${week.weekNumber}</b><small>${escapeAttr(week.label.replace("-", " - "))}</small></button>`;
+}
+
+function syncRulerWeeks(container, prefix, startWeek, endWeek) {
+  container.querySelectorAll(`[data-ruler-prefix="${prefix}"]`).forEach((button) => {
+    const week = Number(button.dataset.rulerWeek);
+    const inRange = week >= startWeek && week <= endWeek;
+    button.setAttribute("aria-pressed", String(inRange));
+    button.classList.toggle("is-edge", inRange && (week === startWeek || week === endWeek));
+  });
 }
 
 export function bindCollectionPeriodControls(container, prefix, ctx) {
@@ -77,6 +105,7 @@ export function bindCollectionPeriodControls(container, prefix, ctx) {
 
     state.collectionPeriod = normalizeCollectionPeriod(next);
     saveState();
+    syncRulerWeeks(container, prefix, state.collectionPeriod.startWeek, state.collectionPeriod.endWeek);
     if (ctx.refreshRoute) ctx.refreshRoute();
   };
 
@@ -86,6 +115,17 @@ export function bindCollectionPeriodControls(container, prefix, ctx) {
   month.onchange = () => commit(preset.value === "custom" ? "custom" : preset.value);
   startWeek.onchange = () => commit("custom");
   endWeek.onchange = () => commit("custom");
+
+  container.querySelectorAll(`[data-ruler-prefix="${prefix}"]`).forEach((button) => {
+    button.onclick = (event) => {
+      const week = Number(button.dataset.rulerWeek);
+      const anchor = Number.parseInt(startWeek.value, 10) || week;
+      startWeek.value = String(event.shiftKey ? Math.min(anchor, week) : week);
+      endWeek.value = String(event.shiftKey ? Math.max(anchor, week) : week);
+      preset.value = "custom";
+      commit("custom");
+    };
+  });
 }
 
 export function collectionPeriodSummary() {

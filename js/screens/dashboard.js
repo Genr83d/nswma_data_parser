@@ -3,6 +3,7 @@ import { uniqueDistrictTargets } from "../utils/matcher.js";
 import { escapeHtml, sortZones } from "../utils/normalizer.js";
 import { generateSelectedWeekColumns } from "../utils/weekCalendar.js";
 import { bindCollectionPeriodControls, collectionPeriodControlsHtml } from "../utils/periodControls.js";
+import { icon, stamp, zoneMark } from "../utils/ui.js";
 
 export function renderDashboard(container, ctx) {
   const allDistricts = uniqueDistrictTargets(state);
@@ -11,44 +12,49 @@ export function renderDashboard(container, ctx) {
   const pending = records.filter((record) => ["forecast", "backlog", "late"].includes(record.section)).length;
   const missed = records.filter((record) => record.section === "incomplete").length;
   const unmapped = records.filter((record) => record.status !== "matched").length;
-  const communitiesCount = state.zones.reduce((sum, zone) => sum + zone.communities.length, 0);
   const totalCollections = completed + pending + missed;
   const weekly = buildDashboardWeeks(allDistricts.length);
+  const zones = buildZonePerformance(ctx);
+  const reportedDistricts = new Set(records.filter((record) => record.status === "matched").map((record) => `${record.zone}|${record.normalizedDistrict || record.district}`)).size;
 
   container.innerHTML = `
     <div class="dashboard-topbar">
       <div class="dashboard-title">
-        <div class="menu-glyph">=</div>
-        <div><h2>Dashboard</h2><p>Overview of collection activities and parser performance</p></div>
+        <div><h2>Collection book</h2><p>Where every zone stands for the selected weeks, from the reports parsed on this computer.</p></div>
       </div>
       <div class="dashboard-actions">
-        ${collectionPeriodControlsHtml("dashboard", "Quick Preset")}
-        <button id="dashboardRefreshButton" class="btn btn-primary">Refresh Data</button>
+        <button id="dashboardRefreshButton" class="btn btn-secondary">${icon("arrow-clockwise")}Refresh</button>
+        <button class="btn btn-primary" data-route="upload">${icon("tray-arrow-down")}Parse reports</button>
       </div>
     </div>
-    <div class="metric-grid">
-      ${metricCard("Total Zones", state.zones.length, "Across master list", "Z", "#dbeafe", "#2563eb")}
-      ${metricCard("Total Communities", communitiesCount, "All active zones", "C", "#dcfce7", "#16a34a")}
-      ${metricCard("Total Districts", allDistricts.length, "Editable district records", "D", "#ede9fe", "#7c3aed")}
-      ${metricCard("Completed", completed, `${pct(completed, totalCollections)}% of parsed work`, "OK", "#dcfce7", "#16a34a")}
-      ${metricCard("Pending", pending, `${pct(pending, totalCollections)}% forecast/backlog`, "P", "#fef3c7", "#f59e0b")}
-      ${metricCard("Missed", missed, `${pct(missed, totalCollections)}% incomplete`, "M", "#fee2e2", "#ef4444")}
+    ${collectionPeriodControlsHtml("dashboard", "Quick preset")}
+    <div class="dash-tallies">
+      ${dashTally("Collected", completed, `${pct(completed, totalCollections)}% of reported work`, "green")}
+      ${dashTally("Missed", missed, `${pct(missed, totalCollections)}% marked incomplete`, "red")}
+      ${dashTally("Pending", pending, "Forecast, late and backlog", "carbon")}
+      ${dashTally("Needs mapping", unmapped, unmapped ? "Not yet matched to a district" : "Every record matched", "ochre")}
+      ${dashTally("Districts reported", reportedDistricts, `of ${allDistricts.length.toLocaleString()} in the master list`, "ink")}
     </div>
-    <div class="dashboard-grid">
-      <div class="panel p-5">
-        <div class="section-heading"><h3>Weekly Progress Overview</h3></div>
-        <div class="weekly-card-grid">${weekly.map((week, index) => progressCard(`Week ${index + 1}`, week.label, week.completed, week.total, week.color)).join("")}</div>
-      </div>
-      <div class="panel p-5">
-        <div class="section-heading"><h3>Collection Status Map</h3><select class="field" style="width: 150px"><option>All Zones</option>${sortZones(state.zones).map((zone) => `<option>${zone.name}</option>`).join("")}</select></div>
-        <div class="map-panel"><div class="jamaica-shape"></div><span class="map-label" style="left: 12%; top: 105px;">West</span><span class="map-label" style="left: 42%; top: 88px;">Central</span><span class="map-label" style="left: 68%; top: 118px;">Kingston</span><span class="map-label" style="left: 82%; top: 92px;">East</span></div>
-        <div class="legend">${legendItem("Completed", "#22c55e")}${legendItem("In Progress", "#eab308")}${legendItem("Pending", "#f97316")}${legendItem("Missed", "#ef4444")}${legendItem("No Data", "#cbd5e1")}</div>
-      </div>
-    </div>
-    <div class="dashboard-bottom-grid">
-      <div class="panel p-5"><div class="section-heading"><h3>Recent Activity</h3><button class="btn btn-secondary" data-route="results">View All</button></div><div class="space-y-2">${recentActivityHtml()}</div></div>
-      <div class="panel p-5"><div class="section-heading"><h3>Alerts & Notifications</h3></div><div class="space-y-3">${alertsHtml(unmapped, missed, pending)}</div></div>
-      <div class="panel p-5"><div class="section-heading"><h3>Zone Completion Rate</h3><button class="btn btn-secondary" data-route="weekly">View Report</button></div><div>${buildZonePerformance(ctx).map(zoneBar).join("") || `<p class="text-sm text-slate-500">Parse reports to see zone performance.</p>`}</div><p class="mt-5 text-xs text-slate-500">Based on current parsed records and filters</p></div>
+    ${state.records.length ? "" : `<div class="dash-empty"><div><strong>No reports parsed yet</strong><p>Upload a WhatsApp .txt export or paste report text. The book fills in from there.</p></div><button class="btn btn-primary" data-route="upload">${icon("tray-arrow-down")}Upload reports</button></div>`}
+    <div class="dash-body">
+      <section aria-labelledby="zoneRosterTitle">
+        <div class="dash-heading"><h3 id="zoneRosterTitle">Zones</h3><p>${state.zones.length} zones, ${state.zones.reduce((sum, zone) => sum + zone.communities.length, 0).toLocaleString()} communities. Open a zone to see its weekly sheet.</p></div>
+        <div class="zone-roster">${zones.map(zonePlate).join("")}</div>
+      </section>
+      <aside class="dash-side">
+        <section>
+          <div class="dash-heading"><h3>Weeks</h3><p>Districts collected</p></div>
+          <div class="week-lines">${weekly.map(weekLine).join("")}</div>
+        </section>
+        <section>
+          <div class="dash-heading"><h3>Needs attention</h3></div>
+          <div>${alertsHtml(unmapped, missed, pending)}</div>
+        </section>
+        <section>
+          <div class="dash-heading"><h3>Recent entries</h3><button class="text-action" data-route="results">All results</button></div>
+          <div class="carbon-log">${recentActivityHtml()}</div>
+        </section>
+      </aside>
     </div>`;
 
   bindCollectionPeriodControls(container, "dashboard", ctx);
@@ -58,61 +64,74 @@ export function renderDashboard(container, ctx) {
     ctx.refreshRoute();
   };
   container.querySelectorAll("[data-route]").forEach((button) => (button.onclick = () => ctx.navigate(button.dataset.route)));
+  container.querySelectorAll("[data-zone-plate]").forEach((button) => {
+    button.onclick = () => {
+      state.weeklySheet = { ...(state.weeklySheet || {}), zone: button.dataset.zonePlate, community: "all" };
+      ctx.saveState();
+      ctx.navigate("weekly");
+    };
+  });
 }
 
-function metricCard(label, value, subtext, icon, background, color) {
-  return `<div class="panel metric-card"><div class="metric-icon" style="background:${background}; color:${color};">${icon}</div><div><h3>${label}</h3><strong>${Number(value || 0).toLocaleString()}</strong><p>${subtext}</p></div></div>`;
+function dashTally(label, value, note, tone) {
+  return `<div class="dash-tally tone-${tone}">${stamp(label, tone, "stamp-press")}<strong class="tally-value">${Number(value || 0).toLocaleString()}</strong><small>${escapeHtml(note)}</small></div>`;
 }
 
-function progressCard(label, dateLabel, count, total, color) {
-  const percent = total ? Math.round((count / total) * 100) : 0;
-  return `<div class="week-card"><p class="font-black">${label}</p><p class="mt-2 text-xs text-slate-500">${dateLabel}</p><div class="donut" style="--pct:${percent}; --ring-color:${color};"><span>${percent}%</span></div><p class="text-sm font-black">${Number(count).toLocaleString()} / ${Number(total).toLocaleString()}</p></div>`;
+function zonePlate(zone) {
+  const mark = zoneMark(zone.name);
+  const hasWork = zone.total > 0;
+  return `<button type="button" class="zone-plate${hasWork ? "" : " is-quiet"}" data-zone-plate="${escapeHtml(zone.name)}" aria-label="${escapeHtml(zone.name)}: ${hasWork ? `${zone.pct}% collected` : "no reports"}. Open weekly sheet.">
+    <span class="plate-mark${mark.mark.length > 3 ? " is-long" : ""}">${escapeHtml(mark.mark)}${mark.suffix ? `<small>${escapeHtml(mark.suffix)}</small>` : ""}</span>
+    <span class="plate-monitor${zone.monitor ? "" : " is-empty"}">${mark.kicker && mark.kicker !== "Zone" ? `<b>${escapeHtml(mark.kicker)}</b><br>` : ""}${escapeHtml(zone.monitor || "No monitor listed")}<br>${zone.communities} communities</span>
+    <span>
+      <span class="plate-counts">${hasWork ? `<span class="c-done"><b>${zone.completed}</b> done</span><span class="c-missed"><b>${zone.missed}</b> missed</span><span class="c-pending"><b>${zone.pending}</b> pending</span>` : "No reports these weeks"}</span>
+      <span class="plate-fill"><i style="width:${zone.pct}%"></i></span>
+    </span>
+    ${hasWork ? `<span class="plate-pct">${zone.pct}%</span>` : ""}
+  </button>`;
+}
+
+function weekLine(week) {
+  const percent = week.total ? Math.round((week.completed / week.total) * 100) : 0;
+  return `<div class="week-line"><b>Week ${week.weekNumber}</b><span>${escapeHtml(week.label)}</span><strong>${Number(week.completed).toLocaleString()}</strong><span class="plate-fill"><i style="width:${percent}%"></i></span></div>`;
 }
 
 function buildDashboardWeeks(totalDistricts) {
   const period = state.collectionPeriod || {};
   const weeks = generateSelectedWeekColumns(period.year, period.startWeek, period.endWeek, period.month, period.mode);
-  const colors = ["#22c55e", "#f59e0b", "#3b82f6", "#2563eb", "#94a3b8"];
   return weeks.map((week, index) => {
     const completedKeys = new Set(state.records.filter((record) => record.section === "completed" && record.reportDate >= week.start && record.reportDate <= week.end).map((record) => `${record.zone}|${record.normalizedDistrict || record.district}`));
-    return { ...week, label: week.label.replace("-", " - "), completed: completedKeys.size, total: totalDistricts || 0, color: colors[index % colors.length] };
+    return { ...week, label: week.label.replace("-", " - "), completed: completedKeys.size, total: totalDistricts || 0 };
   });
 }
 
-function legendItem(label, color) {
-  return `<span class="legend-item"><span class="legend-dot" style="background:${color};"></span>${label}</span>`;
-}
-
 function recentActivityHtml() {
-  const generated = state.records.slice(0, 5).map((record) => ({ message: `${record.district} marked as ${record.section}`, at: record.reportDate || new Date().toISOString(), badge: record.section, status: record.status }));
+  const generated = state.records.slice(0, 5).map((record) => ({ message: `${record.district} marked as ${record.section}`, at: record.reportDate || new Date().toISOString() }));
   const activities = state.recentActivity.length ? state.recentActivity : generated;
-  if (!activities.length) return `<div class="activity-item bg-slate-50"><div class="activity-icon bg-blue-100 text-blue-700">I</div><div><p>No activity yet</p><span>Upload or paste reports to begin</span></div><span class="status-pill status-needs_review">Ready</span></div>`;
-  return activities.slice(0, 5).map((item) => `<div class="activity-item bg-white"><div class="activity-icon ${item.status === "unmapped" ? "bg-red-100 text-red-700" : item.status === "needs_review" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}">${(item.badge || "A").slice(0, 1).toUpperCase()}</div><div><p>${escapeHtml(item.message)}</p><span>${new Date(item.at).toLocaleString()}</span></div><span class="status-pill status-${item.status || "matched"}">${(item.status || "matched").replace("_", " ")}</span></div>`).join("");
+  if (!activities.length) return `<p class="carbon-log-empty">Nothing entered yet. Activity from parsing and mapping is logged here.</p>`;
+  return activities.slice(0, 5).map((item) => `<div class="carbon-log-item"><p>${escapeHtml(item.message)}</p><time>${new Date(item.at).toLocaleString()}</time></div>`).join("");
 }
 
 function alertsHtml(unmapped, missed, pending) {
   const alerts = [];
-  if (missed) alerts.push({ tone: "red", title: `${missed} missed collections found`, detail: "Review incomplete areas and follow up with supervisors" });
-  if (unmapped) alerts.push({ tone: "amber", title: `${unmapped} records need mapping review`, detail: "Approve suggestions or add aliases for future parsing" });
-  if (pending) alerts.push({ tone: "amber", title: `${pending} pending or forecast records`, detail: "Track backlog and forecast areas in the weekly sheet" });
-  if (!state.records.length) alerts.push({ tone: "blue", title: "No reports parsed yet", detail: "Upload a WhatsApp .txt file or paste raw report text" });
-  if (!alerts.length) alerts.push({ tone: "green", title: "No active dashboard alerts", detail: "Current parsed records are mapped and review-ready" });
-  const styles = { red: "bg-red-50 text-red-700", amber: "bg-amber-50 text-amber-700", blue: "bg-blue-50 text-blue-700", green: "bg-emerald-50 text-emerald-700" };
-  return alerts.map((alert) => `<div class="alert-item ${styles[alert.tone]}"><div class="alert-icon bg-white">${alert.tone.slice(0, 1).toUpperCase()}</div><div><p>${alert.title}</p><span>${alert.detail}</span></div><strong>&gt;</strong></div>`).join("");
+  if (missed) alerts.push({ tone: "red", label: "Missed", title: `${missed.toLocaleString()} missed collections`, detail: "Follow up with zone supervisors on incomplete areas." });
+  if (unmapped) alerts.push({ tone: "ochre", label: "Review", title: `${unmapped.toLocaleString()} records need mapping`, detail: "Approve suggestions or add aliases so future reports match." });
+  if (pending) alerts.push({ tone: "carbon", label: "Pending", title: `${pending.toLocaleString()} forecast, late or backlog`, detail: "Track these on the weekly sheet." });
+  if (!state.records.length) alerts.push({ tone: "ink", label: "Empty", title: "No reports parsed yet", detail: "Upload a WhatsApp .txt file or paste report text." });
+  if (!alerts.length) alerts.push({ tone: "green", label: "Clear", title: "Nothing needs attention", detail: "Parsed records are mapped and ready for review." });
+  return alerts.map((alert) => `<div class="alert-item">${stamp(alert.label, alert.tone)}<div><p>${escapeHtml(alert.title)}</p><span>${escapeHtml(alert.detail)}</span></div></div>`).join("");
 }
 
 function buildZonePerformance(ctx) {
+  const records = ctx.filteredRecords();
   return sortZones(state.zones).map((zone) => {
-    const zoneRecords = ctx.filteredRecords().filter((record) => record.zone === zone.name);
+    const zoneRecords = records.filter((record) => record.zone === zone.name);
     const completed = zoneRecords.filter((record) => record.section === "completed").length;
-    const total = zoneRecords.filter((record) => ["completed", "incomplete", "forecast", "backlog", "late"].includes(record.section)).length;
-    return { name: zone.name, pct: total ? Math.round((completed / total) * 100) : 0, total };
-  }).slice(0, 6);
-}
-
-function zoneBar(zone) {
-  const color = zone.pct >= 70 ? "#22c55e" : zone.pct >= 40 ? "#eab308" : "#f97316";
-  return `<div class="zone-bar"><div class="zone-bar-row"><span>${zone.name}</span><span>${zone.pct}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${zone.pct}%; background:${color};"></div></div></div>`;
+    const missed = zoneRecords.filter((record) => record.section === "incomplete").length;
+    const pending = zoneRecords.filter((record) => ["forecast", "backlog", "late"].includes(record.section)).length;
+    const total = completed + missed + pending;
+    return { name: zone.name, monitor: zone.monitor || "", communities: zone.communities.length, completed, missed, pending, total, pct: total ? Math.round((completed / total) * 100) : 0 };
+  });
 }
 
 function pct(value, total) {

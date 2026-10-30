@@ -1,0 +1,531 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T05:28:06+00:00",
+  "title": "Design System: WCIS",
+  "extensions": {
+    "colorMeta": {
+      "cover": {
+        "role": "neutral",
+        "displayName": "Bookcloth Green",
+        "canonical": "#0c3b24",
+        "tonalRamp": [
+          "#001202",
+          "#003019",
+          "#234f37",
+          "#457257",
+          "#68957a",
+          "#8cbb9e",
+          "#badac6",
+          "#e4f3e9"
+        ]
+      },
+      "cover-2": {
+        "role": "neutral",
+        "displayName": "Bookcloth Green, Lighter",
+        "canonical": "#134d30"
+      },
+      "cover-ink": {
+        "role": "neutral",
+        "displayName": "Cover Ink",
+        "canonical": "#e7efe2"
+      },
+      "cover-ink-2": {
+        "role": "neutral",
+        "displayName": "Cover Ink, Muted",
+        "canonical": "#a9c2ae"
+      },
+      "ply-white": {
+        "role": "neutral",
+        "displayName": "White Ply (original record)",
+        "canonical": "#fbfcf8",
+        "tonalRamp": [
+          "#0b0b09",
+          "#262724",
+          "#454542",
+          "#666663",
+          "#898a86",
+          "#adaeab",
+          "#d0d1ce",
+          "#eeefed"
+        ]
+      },
+      "ply-canary": {
+        "role": "neutral",
+        "displayName": "Canary Ply (review copy)",
+        "canonical": "#fbf0b4",
+        "tonalRamp": [
+          "#140900",
+          "#302600",
+          "#504506",
+          "#71672e",
+          "#958a52",
+          "#baaf76",
+          "#ddd29b",
+          "#f5efd2"
+        ]
+      },
+      "ply-pink": {
+        "role": "neutral",
+        "displayName": "Pink Ply (file copy)",
+        "canonical": "#fae0e5",
+        "tonalRamp": [
+          "#15060a",
+          "#332025",
+          "#533f43",
+          "#755f64",
+          "#9a8287",
+          "#bfa7ab",
+          "#e2cace",
+          "#f8ebed"
+        ]
+      },
+      "leaf": {
+        "role": "neutral",
+        "displayName": "Leaf Paper",
+        "canonical": "#fdfdfb"
+      },
+      "leaf-2": {
+        "role": "neutral",
+        "displayName": "Leaf Tint 4%",
+        "canonical": "color-mix(in oklab, var(--ply), #0a5a2e 4%)"
+      },
+      "leaf-3": {
+        "role": "neutral",
+        "displayName": "Leaf Tint 8%",
+        "canonical": "color-mix(in oklab, var(--ply), #0a5a2e 8%)"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Form Rule",
+        "canonical": "color-mix(in oklab, var(--ply), #0a5a2e 17%)"
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Form Rule, Strong",
+        "canonical": "color-mix(in oklab, var(--ply), #0a5a2e 34%)"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#191c19",
+        "tonalRamp": [
+          "#090c09",
+          "#242724",
+          "#434643",
+          "#646763",
+          "#868a86",
+          "#abafab",
+          "#cfd2cf",
+          "#eeefed"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink, Secondary",
+        "canonical": "#3b423b"
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink, Caption / Stamp Grey",
+        "canonical": "#566056"
+      },
+      "ink-4": {
+        "role": "neutral",
+        "displayName": "Ink, Placeholder",
+        "canonical": "#6b746a"
+      },
+      "green": {
+        "role": "primary",
+        "displayName": "Form Green",
+        "canonical": "#00843d",
+        "tonalRamp": [
+          "#001700",
+          "#003700",
+          "#005811",
+          "#007c35",
+          "#35a158",
+          "#5fc77c",
+          "#96e7a9",
+          "#d5fadc"
+        ]
+      },
+      "green-deep": {
+        "role": "primary",
+        "displayName": "Deep Form Green",
+        "canonical": "#0a5a2e",
+        "tonalRamp": [
+          "#001500",
+          "#003309",
+          "#005428",
+          "#307749",
+          "#559b6b",
+          "#7ac18f",
+          "#ade0ba",
+          "#def6e4"
+        ]
+      },
+      "green-wash": {
+        "role": "primary",
+        "displayName": "Green Wash",
+        "canonical": "#e1f0e4"
+      },
+      "carbon": {
+        "role": "secondary",
+        "displayName": "Carbon Blue",
+        "canonical": "#2b3a8f",
+        "tonalRamp": [
+          "#080045",
+          "#121569",
+          "#2b3a8f",
+          "#495eb6",
+          "#6a82de",
+          "#8da8ff",
+          "#b8ceff",
+          "#e2eeff"
+        ]
+      },
+      "carbon-wash": {
+        "role": "secondary",
+        "displayName": "Carbon Wash",
+        "canonical": "#e4e7f5"
+      },
+      "gold": {
+        "role": "tertiary",
+        "displayName": "Jamaican Gold Highlighter",
+        "canonical": "#fed100",
+        "tonalRamp": [
+          "#230000",
+          "#441900",
+          "#663b00",
+          "#895e00",
+          "#ae8300",
+          "#d5a900",
+          "#f9cc00",
+          "#ffeead"
+        ]
+      },
+      "gold-wash": {
+        "role": "tertiary",
+        "displayName": "Highlighter Wash",
+        "canonical": "#fff09e"
+      },
+      "gold-edge": {
+        "role": "tertiary",
+        "displayName": "Gold Edge",
+        "canonical": "#c9a400"
+      },
+      "red": {
+        "role": "status",
+        "displayName": "Stamp Red",
+        "canonical": "#b8261a",
+        "tonalRamp": [
+          "#3c0000",
+          "#650000",
+          "#8e0000",
+          "#b8261a",
+          "#e25141",
+          "#ff7965",
+          "#ffab98",
+          "#ffded4"
+        ]
+      },
+      "red-wash": {
+        "role": "status",
+        "displayName": "Red Wash",
+        "canonical": "#f8e0dc"
+      },
+      "ochre": {
+        "role": "status",
+        "displayName": "Ledger Ochre",
+        "canonical": "#8f5400",
+        "tonalRamp": [
+          "#260000",
+          "#491200",
+          "#6c3400",
+          "#915604",
+          "#b87a37",
+          "#df9f5d",
+          "#fac593",
+          "#ffead2"
+        ]
+      },
+      "ochre-wash": {
+        "role": "status",
+        "displayName": "Ochre Wash",
+        "canonical": "#f9ead0"
+      },
+      "plum": {
+        "role": "status",
+        "displayName": "Backlog Plum",
+        "canonical": "#74306a",
+        "tonalRamp": [
+          "#23001f",
+          "#46003e",
+          "#692660",
+          "#8e4883",
+          "#b56ba8",
+          "#dc90ce",
+          "#f6bbea",
+          "#ffe5fa"
+        ]
+      },
+      "plum-wash": {
+        "role": "status",
+        "displayName": "Plum Wash",
+        "canonical": "#f1e1ee"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Zone Numeral",
+        "purpose": "Zone plate numerals and the cover title; expanded black."
+      },
+      "headline": {
+        "displayName": "Leaf Title",
+        "purpose": "Screen title in each stub header; modal titles at 1.3rem."
+      },
+      "tally": {
+        "displayName": "Tally Figure",
+        "purpose": "Counts in tally rows, colored by tone; 2.35rem on the dashboard, 1.8rem elsewhere."
+      },
+      "title": {
+        "displayName": "Section Title",
+        "purpose": "Panel and section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptive text and table cells; 14px base, leaf intros 0.9rem max 62ch."
+      },
+      "label": {
+        "displayName": "Form Caption",
+        "purpose": "Pre-printed captions and table headers, uppercase, green-deep."
+      },
+      "stamp": {
+        "displayName": "Stamp",
+        "purpose": "Status stamp lettering, uppercase."
+      },
+      "typed": {
+        "displayName": "Typed Report",
+        "purpose": "Raw field report text only (paste box, source lines, activity log)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "slip",
+        "value": "0 2px 4px rgba(20, 28, 20, 0.08), 0 24px 60px rgba(20, 28, 20, 0.22)",
+        "purpose": "Modals and map popups laid on the leaf."
+      },
+      {
+        "name": "cell-lift",
+        "value": "0 0 0 1px var(--rule-strong), 0 6px 18px rgba(20, 28, 20, 0.12)",
+        "purpose": "Weekly sheet cell under hover or edit."
+      },
+      {
+        "name": "field-focus",
+        "value": "0 0 0 3px color-mix(in oklab, var(--carbon), transparent 82%)",
+        "purpose": "Field and textarea focus ring, with carbon border."
+      },
+      {
+        "name": "stamp-rim",
+        "value": "inset 0 0 0 1.5px color-mix(in oklab, var(--ply), transparent 10%), inset 0 0 0 2.5px color-mix(in oklab, currentColor, transparent 45%)",
+        "purpose": "Double inner rule of every stamp; not elevation."
+      },
+      {
+        "name": "modal-scrim",
+        "value": "rgba(12, 59, 36, 0.42)",
+        "purpose": "Green scrim behind slips; no backdrop blur."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The single easing for leaf turn, stamps, slips and tab strips."
+      },
+      {
+        "name": "leaf-settle",
+        "value": "420ms; children rise 8px and fade in, staggered 0/30/60/90ms",
+        "purpose": "Route change: the leaf turns once per route."
+      },
+      {
+        "name": "stamp-press",
+        "value": "380ms; from scale(1.35) rotate(-4deg), opacity 0",
+        "purpose": "Stamps press once on arrival (dashboard tallies)."
+      },
+      {
+        "name": "slip-in",
+        "value": "320ms; from translateY(14px) rotate(-0.4deg)",
+        "purpose": "Modal entrance."
+      },
+      {
+        "name": "tab-strip",
+        "value": "240ms transform",
+        "purpose": "Index tab strip slides 6px proud on hover."
+      },
+      {
+        "name": "state",
+        "value": "120-160ms ease",
+        "purpose": "Hover and color transitions; ply background 280ms."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all animation and transition durations 1ms",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "min-window",
+        "value": "1100px"
+      },
+      {
+        "name": "narrow-tables",
+        "value": "1200px"
+      },
+      {
+        "name": "cover-narrow",
+        "value": "1280px"
+      },
+      {
+        "name": "ruler-wrap",
+        "value": "1360px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action in a stub header (Parse reports, Save sheet).",
+      "html": "<button class=\"ds-btn ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M208 136v72a16 16 0 0 1-16 16H64a16 16 0 0 1-16-16v-72a8 8 0 0 1 16 0v72h128v-72a8 8 0 0 1 16 0Zm-85.66 5.66a8 8 0 0 0 11.32 0l40-40a8 8 0 0 0-11.32-11.32L136 116.69V32a8 8 0 0 0-16 0v84.69L93.66 90.34a8 8 0 0 0-11.32 11.32Z\"/></svg>Parse reports</button>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-btn{display:inline-flex;align-items:center;gap:.45rem;min-height:36px;padding:.4rem .85rem;border:1px solid transparent;border-radius:var(--r);font-family:var(--font);font-size:.85rem;font-weight:750;transition:background-color 140ms ease,border-color 140ms ease,transform 90ms ease;cursor:pointer;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid var(--carbon);outline-offset:2px;} .ds-btn-primary{background:var(--green);border-color:var(--green-deep);color:#fff;} .ds-btn-primary:hover{background:var(--green-deep);}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting actions on leaf paper (Refresh, Import, Export).",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Refresh</button>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-btn{display:inline-flex;align-items:center;gap:.45rem;min-height:36px;padding:.4rem .85rem;border:1px solid transparent;border-radius:var(--r);font-family:var(--font);font-size:.85rem;font-weight:750;transition:background-color 140ms ease,border-color 140ms ease,transform 90ms ease;cursor:pointer;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid var(--carbon);outline-offset:2px;} .ds-btn-secondary{background:var(--leaf);border-color:var(--rule-strong);color:var(--ink);} .ds-btn-secondary:hover{border-color:var(--green);color:var(--green-deep);}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive or reject actions, red-outlined.",
+      "html": "<button class=\"ds-btn ds-btn-danger\">Reject</button>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-btn{display:inline-flex;align-items:center;gap:.45rem;min-height:36px;padding:.4rem .85rem;border:1px solid transparent;border-radius:var(--r);font-family:var(--font);font-size:.85rem;font-weight:750;transition:background-color 140ms ease,border-color 140ms ease,transform 90ms ease;cursor:pointer;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid var(--carbon);outline-offset:2px;} .ds-btn-danger{background:transparent;border-color:color-mix(in oklab,var(--red),transparent 55%);color:var(--red);} .ds-btn-danger:hover{background:var(--red-wash);}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Text and select fields on leaf paper with a carbon focus ring.",
+      "html": "<label class=\"ds-label\"><span>Search district</span><input class=\"ds-field\" placeholder=\"Search district...\"></label>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-label{display:grid;gap:.35rem;font-family:var(--font);} .ds-label span{color:var(--green-deep);font-size:.7rem;font-stretch:78%;font-weight:700;letter-spacing:.07em;text-transform:uppercase;} .ds-field{background:var(--leaf);border:1px solid var(--rule-strong);border-radius:var(--r);color:var(--ink);caret-color:var(--carbon);font:inherit;font-size:.88rem;min-height:38px;padding:.4rem .7rem;transition:border-color 140ms ease,box-shadow 140ms ease;} .ds-field:hover{border-color:color-mix(in oklab,var(--rule-strong),var(--green) 40%);} .ds-field:focus{border-color:var(--carbon);box-shadow:0 0 0 3px color-mix(in oklab,var(--carbon),transparent 82%);outline:none;} .ds-field::placeholder{color:#6b746a;}"
+    },
+    {
+      "name": "Status Stamps",
+      "kind": "chip",
+      "refersTo": "stamp",
+      "description": "Rubber-stamp statuses, one ink per status, double inset rim.",
+      "html": "<div class=\"ds-stamps\"><span class=\"ds-stamp ds-green\">Collected</span><span class=\"ds-stamp ds-red\">Missed</span><span class=\"ds-stamp ds-carbon\">Pending</span><span class=\"ds-stamp ds-ochre\">Late</span><span class=\"ds-stamp ds-plum\">Backlog</span></div>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-stamps{display:flex;gap:.6rem;flex-wrap:wrap;background:var(--ply);padding:.75rem;} .ds-stamp{display:inline-flex;align-items:center;background:color-mix(in oklab,currentColor,transparent 92%);border:1.5px solid currentColor;border-radius:var(--r-stamp);box-shadow:inset 0 0 0 1.5px color-mix(in oklab,var(--ply),transparent 10%),inset 0 0 0 2.5px color-mix(in oklab,currentColor,transparent 45%);font-family:var(--font);font-size:.66rem;font-stretch:85%;font-weight:800;letter-spacing:.09em;line-height:1;padding:.32rem .5rem .28rem;text-transform:uppercase;animation:ds-press 380ms var(--ease-out) both;} .ds-green{color:var(--green);} .ds-red{color:var(--red);} .ds-carbon{color:var(--carbon);} .ds-ochre{color:var(--ochre);} .ds-plum{color:var(--plum);} @keyframes ds-press{from{opacity:0;transform:scale(1.35) rotate(-4deg);}60%{opacity:1;}} @media (prefers-reduced-motion:reduce){.ds-stamp{animation:none;}}"
+    },
+    {
+      "name": "Tally Row",
+      "kind": "custom",
+      "refersTo": "stamp",
+      "description": "Counts as stamped tallies on ruled cells, replacing KPI cards.",
+      "html": "<div class=\"ds-tallies\"><div class=\"ds-tally\" style=\"--tone:#00843d\"><span class=\"ds-stamp\">Collected</span><strong>6</strong><small>55% of reported work</small></div><div class=\"ds-tally\" style=\"--tone:#b8261a\"><span class=\"ds-stamp\">Missed</span><strong>2</strong><small>18% marked incomplete</small></div><div class=\"ds-tally\" style=\"--tone:#2b3a8f\"><span class=\"ds-stamp\">Pending</span><strong>3</strong><small>Forecast, late and backlog</small></div></div>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-tallies{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule);border-bottom:1.5px solid var(--green);background:var(--ply);font-family:var(--font);font-variant-numeric:tabular-nums;} .ds-tally{display:grid;gap:.15rem;justify-items:start;padding:.85rem 1rem .95rem;border-left:1px solid var(--rule);} .ds-tally:first-child{border-left:0;} .ds-stamp{color:var(--tone);border:1.5px solid currentColor;border-radius:var(--r-stamp);background:color-mix(in oklab,currentColor,transparent 92%);box-shadow:inset 0 0 0 1.5px color-mix(in oklab,var(--ply),transparent 10%),inset 0 0 0 2.5px color-mix(in oklab,currentColor,transparent 45%);font-size:.66rem;font-stretch:85%;font-weight:800;letter-spacing:.09em;line-height:1;padding:.32rem .5rem .28rem;text-transform:uppercase;} .ds-tally strong{color:var(--tone);font-size:2.35rem;font-stretch:118%;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:.45rem;} .ds-tally small{color:var(--ink-3);font-size:.76rem;}"
+    },
+    {
+      "name": "Index Tab Rail",
+      "kind": "nav",
+      "refersTo": "nav-tab",
+      "description": "Stepped index tabs on the green cover; the active tab is the leaf's paper.",
+      "html": "<nav class=\"ds-cover\"><p class=\"ds-group\">Report workflow</p><button class=\"ds-tab\" style=\"--tab:#fbfcf8\"><span>Upload &amp; Parse</span><b>1</b></button><button class=\"ds-tab\" style=\"--tab:#fbf0b4\"><span>Mapping Review</span><b>3</b></button><button class=\"ds-tab ds-active\" style=\"--tab:#fae0e5\"><span>Weekly Sheet</span><b>4</b></button></nav>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-cover{background:var(--cover);padding:1rem 0 1rem 1rem;display:grid;gap:.15rem;width:252px;font-family:var(--font);} .ds-group{color:var(--cover-ink-2);font-size:.68rem;font-stretch:75%;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 .3rem .35rem;} .ds-tab{position:relative;display:flex;align-items:center;min-height:40px;padding:.45rem 2.6rem .45rem .7rem;background:transparent;border:0;border-radius:var(--r) 0 0 var(--r);color:var(--cover-ink);font:inherit;font-size:.86rem;font-weight:650;text-align:left;cursor:pointer;} .ds-tab::before{content:\"\";position:absolute;right:0;top:4px;bottom:4px;width:30px;background:var(--tab);border-radius:var(--r) 0 0 var(--r);transform:translateX(6px);transition:transform 240ms var(--ease-out);} .ds-tab b{position:absolute;right:9px;width:18px;text-align:center;color:var(--green-deep);font-size:.78rem;font-stretch:112%;font-weight:800;z-index:1;transform:translateX(6px);transition:transform 240ms var(--ease-out);} .ds-tab:hover{background:rgba(231,239,226,.07);} .ds-tab:hover::before,.ds-tab:hover b{transform:translateX(0);} .ds-tab:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;} .ds-active{background:var(--tab);color:var(--ink);font-weight:800;} .ds-active::before{display:none;} .ds-active b{transform:none;}"
+    },
+    {
+      "name": "Period Ruler",
+      "kind": "custom",
+      "refersTo": "ruler-week-selected",
+      "description": "Week segments with tick marks; gold highlighter on the selected range, carbon edge bar.",
+      "html": "<div class=\"ds-ruler\"><button class=\"ds-week\" aria-pressed=\"true\"><b>Week 1</b><small>Mar 25 - Mar 31</small></button><button class=\"ds-week ds-edge\" aria-pressed=\"true\"><b>Week 2</b><small>Apr 1 - Apr 7</small></button><button class=\"ds-week\" aria-pressed=\"false\"><b>Week 3</b><small>Apr 8 - Apr 14</small></button></div>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-ruler{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-top:1.5px solid var(--green);border-bottom:1.5px solid var(--green);background:var(--ply);font-family:var(--font);position:relative;} .ds-week{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.05rem;min-height:52px;padding:.35rem .7rem;background:transparent;border:0;border-left:1px solid var(--rule);color:var(--ink-3);text-align:left;cursor:pointer;transition:background-color 160ms ease;font:inherit;} .ds-week:first-child{border-left:0;} .ds-week::before{content:\"\";position:absolute;left:0;right:0;top:0;height:5px;opacity:.55;background:repeating-linear-gradient(90deg,var(--green) 0 1px,transparent 1px calc(100% / 7));} .ds-week b{color:var(--ink);font-size:.82rem;font-stretch:112%;font-weight:800;} .ds-week small{font-size:.72rem;} .ds-week:hover{background:color-mix(in oklab,var(--ply),var(--gold) 22%);} .ds-week:focus-visible{outline:2px solid var(--carbon);outline-offset:-2px;} .ds-week[aria-pressed=true]{background:color-mix(in oklab,var(--gold-wash),var(--ply) 18%);color:var(--ink-2);} .ds-week[aria-pressed=true] b{color:var(--carbon);} .ds-edge::after{content:\"\";position:absolute;left:0;right:0;bottom:-1.5px;height:3px;background:var(--carbon);}"
+    },
+    {
+      "name": "Zone Plate",
+      "kind": "card",
+      "refersTo": "zone-plate",
+      "description": "One ruled plate per zone: expanded numeral, monitor, worded counts, fill gauge.",
+      "html": "<div class=\"ds-roster\"><button class=\"ds-plate\"><span class=\"ds-mark\">09</span><span class=\"ds-mon\">Leon Style<br>2 communities</span><span class=\"ds-counts\"><span style=\"color:#00843d\"><b>3</b> done</span><span style=\"color:#b8261a\"><b>0</b> missed</span><span style=\"color:#2b3a8f\"><b>0</b> pending</span></span><span class=\"ds-fill\"><i style=\"width:100%\"></i></span><span class=\"ds-pct\">100%</span></button><button class=\"ds-plate ds-quiet\"><span class=\"ds-mark\">11<small>A&amp;B</small></span><span class=\"ds-mon\">Leon Style / Janet Henry<br>12 communities</span><span class=\"ds-counts\">No reports these weeks</span><span class=\"ds-fill\"><i style=\"width:0\"></i></span></button></div>",
+      "css": ":host{--ply:#fbfcf8;--leaf:#fdfdfb;--rule:#d3dfd3;--rule-strong:#abc3af;--ink:#191c19;--ink-2:#3b423b;--ink-3:#566056;--green:#00843d;--green-deep:#0a5a2e;--carbon:#2b3a8f;--red:#b8261a;--red-wash:#f8e0dc;--ochre:#8f5400;--plum:#74306a;--gold:#fed100;--gold-wash:#fff09e;--cover:#0c3b24;--cover-ink:#e7efe2;--cover-ink-2:#a9c2ae;--r:2px;--r-stamp:3px;--ease-out:cubic-bezier(0.16,1,0.3,1);--font:\"Archivo\",\"Segoe UI\",system-ui,sans-serif;--font-typed:\"Courier Prime\",\"Courier New\",monospace;} .ds-roster{display:grid;grid-template-columns:repeat(2,minmax(176px,1fr));border-left:1px solid var(--rule);border-top:1px solid var(--rule);background:var(--ply);font-family:var(--font);font-variant-numeric:tabular-nums;} .ds-plate{position:relative;display:grid;gap:.15rem;grid-template-rows:auto auto 1fr auto auto;min-height:150px;padding:.75rem .85rem .8rem;background:transparent;border:0;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);color:var(--ink);text-align:left;font:inherit;cursor:pointer;transition:background-color 160ms ease;} .ds-plate:hover{background:color-mix(in oklab,var(--ply),var(--gold) 20%);} .ds-plate:hover .ds-mark{color:var(--green);} .ds-plate:focus-visible{outline:2px solid var(--carbon);outline-offset:-2px;} .ds-mark{font-size:2.7rem;font-stretch:125%;font-weight:900;letter-spacing:-.045em;line-height:.9;margin-top:.1rem;transition:color 160ms ease;} .ds-mark small{font-size:.9rem;font-stretch:100%;font-weight:800;letter-spacing:0;margin-left:.2rem;} .ds-mon{color:var(--ink-2);font-size:.78rem;line-height:1.3;} .ds-counts{display:flex;gap:.6rem;align-items:baseline;color:var(--ink-3);font-size:.72rem;margin-top:.4rem;} .ds-counts b{font-size:.82rem;font-weight:800;} .ds-fill{position:relative;height:4px;background:var(--rule);margin-top:.45rem;} .ds-fill i{position:absolute;inset:0 auto 0 0;background:var(--green);} .ds-pct{position:absolute;top:.75rem;right:.85rem;font-size:.82rem;font-stretch:112%;font-weight:800;} .ds-quiet .ds-mark{color:color-mix(in oklab,var(--ink-3),var(--ply) 25%);} .ds-quiet .ds-counts{color:#6b746a;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Supervisor's Duplicate Book",
+    "overview": "WCIS is a carbonless duplicate book held open on an office desk. A Jamaican-green bookcloth cover carries a stepped rail of index tabs; the open leaf is bright paper with pre-printed green form ruling; figures are entered in carbon blue; statuses are rubber-stamped in their own inks; Jamaican gold is the highlighter that marks selection and the active week. The leaf changes ply with the step of the work: white is the original record, canary is the review copy (Mapping Review), pink is the file copy (Weekly Sheet, Reports). The three ply edges always show at the right fore-edge, with the current one matching the leaf.\n\nDensity is clerical, not dashboard-airy: counts sit in ruled tally rows, zones sit in a ruled roster of plates, tables are form ruling rather than boxed cards. Depth is almost entirely line and paper; the only real shadows belong to things laid on top of the leaf (modals, map popups, the cell being edited). Motion is the physical book: a leaf turns and settles once per route, stamps press once on arrival, tabs slide proud of the cover on hover.\n\nThe system refuses the navy-sidebar, icon-in-a-rounded-square KPI-card admin template. Every count is a stamped tally; every container is ruled, not floated.",
+    "keyCharacteristics": [
+      "Green bookcloth cover with a stepped index-tab rail; the active tab is the same paper as the leaf and runs into it.",
+      "Three plies (white, canary, pink) assigned per route; ply edges stay visible at the fore-edge.",
+      "Archivo across its width axis: condensed for form captions and stamps, expanded black for zone numerals and tallies.",
+      "Rubber-stamp statuses with double inset rule, uppercase, one ink per status.",
+      "Gold highlighter for selection, hover rows and the active week; never blue selection.",
+      "Sharp 2px corners everywhere; dashed perforation and dashed note borders."
+    ],
+    "rules": [
+      {
+        "name": "The Stamp Ink Rule",
+        "body": "Each status owns one ink and keeps it everywhere: COLLECTED green, MISSED red, PENDING carbon, LATE ochre, BACKLOG plum. Status is always a worded stamp or a worded count, never color alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Highlighter Rule",
+        "body": "Selection, hover and the active period are gold mixed into the ply. Blue is ink, not selection.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ply Rule",
+        "body": "The leaf color is set by the route (white: dashboard, upload, results, map, zones; canary: mapping; pink: weekly, reports). Surfaces inside the leaf are transparent so the ply shows through; washes and rules mix against `--ply`, not against white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Width Axis Rule",
+        "body": "Hierarchy is carried by width as much as weight: captions go condensed (75-85%), numerals and titles go expanded (112-125%). Do not substitute a second display family.",
+        "section": "typography"
+      },
+      {
+        "name": "The Typed Text Rule",
+        "body": "Courier Prime marks text that came from the field as typed. Never use it for UI labels or headings.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper On Paper Rule",
+        "body": "If it is not a slip laid on the leaf, it has no shadow. Cards, panels and tallies are ruled, never floated.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** set the route's ply on `body[data-ply]` and let surfaces stay transparent so white, canary or pink shows through.",
+      "**Do** write every status as a worded stamp in its own ink (COLLECTED green, MISSED red, PENDING carbon, LATE ochre, BACKLOG plum).",
+      "**Do** show counts as stamped tallies in ruled rows via the `tally()` helper.",
+      "**Do** mark selection, hover and the active period with gold mixed into the ply (18% hover, 34% selected, gold-wash for ruler weeks).",
+      "**Do** keep corners at 2px (3px for stamps) and separate content with 1px rule lines and the 1.5px green form rule.",
+      "**Do** use Archivo's width axis for hierarchy: condensed uppercase green-deep captions, expanded black numerals.",
+      "**Do** keep Courier Prime for text that came from the field.",
+      "**Do** use Phosphor icons (regular, bold) through the `icon()` helper, beside a word or, for icon-only controls such as pagination, with an aria-label."
+    ],
+    "donts": [
+      "**Don't** build KPI cards with icon tiles, rounded boxes or drop shadows; counts are tallies on ruling.",
+      "**Don't** use blue or carbon fills for selection; carbon is entered ink and focus.",
+      "**Don't** add shadows to anything that is not a slip laid on the leaf.",
+      "**Don't** introduce a dark theme or navy chrome; the cover is green bookcloth and the leaf is light paper.",
+      "**Don't** let a status depend on color alone; the stamp word or count label carries it.",
+      "**Don't** use rounded pills or large radii; the only circles are map markers and legend dots."
+    ]
+  }
+}

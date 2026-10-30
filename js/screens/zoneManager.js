@@ -1,5 +1,6 @@
 import { state, saveState, addActivity } from "../state.js";
 import { escapeAttr, escapeHtml, normalizeMatchKey, slugify, sortZones } from "../utils/normalizer.js";
+import { icon, tally } from "../utils/ui.js";
 
 export function renderZoneManager(container, ctx) {
   ensureZoneManagerSelection();
@@ -13,18 +14,18 @@ export function renderZoneManager(container, ctx) {
     <div class="zone-manager-topbar">
       <div>
         <h2>Zone Manager</h2>
-        <p>Manage zones, communities and districts</p>
+        <p>The master list every report is matched against: zones, their communities, districts and spelling aliases.</p>
       </div>
       <div class="results-actions">
-        <button id="importZonesButton" class="btn btn-secondary">Import Zones</button>
-        <button id="quickAddZoneButton" class="btn btn-primary">Add Zone</button>
+        <button id="importZonesButton" class="btn btn-secondary">${icon("upload-simple")}Import zones</button>
+        <button id="quickAddZoneButton" class="btn btn-primary">${icon("plus")}Add zone</button>
       </div>
     </div>
 
     <div class="zone-metrics-grid">
-      ${zoneMetric("Total Zones", state.zones.length, "Across all parishes", "Z", "#dbeafe", "#2563eb")}
-      ${zoneMetric("Total Communities", totalCommunities, "Across all zones", "C", "#dcfce7", "#16a34a")}
-      ${zoneMetric("Total Districts", totalDistricts, "Across all communities", "D", "#ede9fe", "#7c3aed")}
+      ${zoneMetric("Total Zones", state.zones.length, "Across all parishes", "squares-four", "ink")}
+      ${zoneMetric("Total Communities", totalCommunities, "Across all zones", "house-line", "ink")}
+      ${zoneMetric("Total Districts", totalDistricts, "Across all communities", "map-pin-area", "ink")}
     </div>
 
     <div class="zone-manager-grid">
@@ -35,7 +36,7 @@ export function renderZoneManager(container, ctx) {
         </div>
         <input id="zoneSearch" class="field" placeholder="Search zones..." value="${escapeAttr(state.zoneManager.zoneSearch)}" />
         <div class="zone-list-scroll">${zoneListHtml()}</div>
-        <div class="zone-manager-pagination"><span>Showing 1 to ${Math.min(8, state.zones.length)} of ${state.zones.length} zones</span><div class="pager"><button class="btn btn-secondary">‹</button><button class="btn btn-primary">1</button><button class="btn btn-secondary">2</button><button class="btn btn-secondary">›</button></div></div>
+        <div class="zone-manager-pagination"><span>Showing 1 to ${Math.min(8, state.zones.length)} of ${state.zones.length} zones</span><div class="pager"><button class="btn btn-secondary" aria-label="Previous page">${icon("caret-left")}</button><button class="btn btn-primary">1</button><button class="btn btn-secondary">2</button><button class="btn btn-secondary" aria-label="Next page">${icon("caret-right")}</button></div></div>
       </section>
 
       <section class="panel community-browser-panel">
@@ -70,9 +71,9 @@ export function renderZoneManager(container, ctx) {
       </div>
       <div class="panel legend-panel">
         <h3>Legend</h3>
-        <p><span class="legend-dot" style="background:#16a34a"></span>Active <small>Visible and used in the system</small></p>
-        <p><span class="legend-dot" style="background:#f59e0b"></span>Inactive <small>Hidden from selection</small></p>
-        <p><span class="legend-dot" style="background:#ef4444"></span>Archived <small>No longer in use</small></p>
+        <p><span class="legend-dot" style="background:var(--green)"></span>Active <small>Visible and used in the system</small></p>
+        <p><span class="legend-dot" style="background:var(--ochre)"></span>Inactive <small>Hidden from selection</small></p>
+        <p><span class="legend-dot" style="background:var(--red)"></span>Archived <small>No longer in use</small></p>
       </div>
     </div>`;
 
@@ -106,8 +107,8 @@ function getSelectedDistrict(community = getSelectedCommunity()) {
   return community?.districts.find((district) => district.id === state.zoneManager.selectedDistrictId) || community?.districts[0] || null;
 }
 
-function zoneMetric(label, value, subtext, icon, background, color) {
-  return `<div class="panel result-metric zone-summary-card"><div class="metric-icon" style="background:${background}; color:${color};">${icon}</div><div><p>${label}</p><strong>${Number(value || 0).toLocaleString()}</strong><span>${subtext}</span></div></div>`;
+function zoneMetric(label, value, note, iconName, tone) {
+  return tally({ label, value, note, iconName, tone, className: "result-metric zone-summary-card" });
 }
 
 function zoneListHtml() {
@@ -123,7 +124,7 @@ function zoneListHtml() {
         <strong>${escapeHtml(zone.name)}</strong>
         <span>${communities} communities · ${districts} districts</span>
       </div>
-      <b>⋮</b>
+      <b>${icon("caret-right")}</b>
     </button>`;
   }).join("");
 }
@@ -164,7 +165,7 @@ function districtRowHtml(zone, community, district) {
 function districtEditorHtml(zone, community, district) {
   return `<div class="district-editor">
     <h3>Edit District</h3>
-    <label>District Name <span>*</span><input id="editDistrictName" class="field" value="${escapeAttr(district.name)}" /></label>
+    <label>District name (required)<input id="editDistrictName" class="field" value="${escapeAttr(district.name)}" /></label>
     <label>Default Pattern<select id="editDistrictDefaultPattern" class="field">${defaultPatternOptions(district.defaultPattern)}</select></label>
     <label>Collection Dates <small>(comma-separated)</small><textarea id="editDistrictDates" class="field alias-textarea" placeholder="e.g., 2026-05-01, 2026-05-08">${escapeHtml((district.dates || []).join(", "))}</textarea></label>
     <label>Aliases <small>(for future parsing)</small><textarea id="editDistrictAliases" class="field alias-textarea" placeholder="Comma-separated aliases">${escapeHtml((district.aliases || []).join(", "))}</textarea></label>
